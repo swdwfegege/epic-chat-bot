@@ -1,69 +1,500 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Chat (Secure Names)</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nexus Terminal</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
     <style>
-        :root {
-            --bg-color: #f0f2f5;
-            --chat-bubble: #ffffff;
-            --accent-color: #0084ff;
-            --admin-color: #dc3545;
-            --text-main: #050505;
-            --text-muted: #65676b;
-        }
+      :root {
+        --nexus-glow: rgba(0, 242, 255, 0.5);
+        --nexus-bg: #030303;
+        --accent: #00f2ff;
+        --glass: rgba(255, 255, 255, 0.03);
+        --border: rgba(255, 255, 255, 0.1);
+        --online: #00ff88;
+        --offline: #555;
+      }
 
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg-color); }
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: #000;
+        color: white;
+        height: 100%;
+        overflow: hidden;
+      }
 
-        #registration-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: none;
-            justify-content: center; align-items: center; z-index: 1000;
-        }
+      /* --- UI HELPERS --- */
+      .nexus-input {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid var(--border);
+        color: white;
+        padding: 12px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        outline: none;
+      }
+      .nexus-btn {
+        width: 100%;
+        background: transparent;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        padding: 10px;
+        cursor: pointer;
+        transition: 0.3s;
+        font-weight: 600;
+      }
+      .nexus-btn:hover {
+        background: var(--accent);
+        color: black;
+        box-shadow: 0 0 15px var(--accent);
+      }
 
-        .reg-card { background: white; padding: 30px; border-radius: 12px; text-align: center; }
-        #name-error { color: var(--admin-color); font-size: 0.8rem; margin-top: 10px; display: none; }
+      /* --- HUB --- */
+      #hub {
+        display: none;
+        width: 100%;
+        height: 100vh;
+        flex-direction: column;
+        opacity: 0;
+        transition: 1s;
+      }
+      .navbar {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        padding: 20px 0;
+        border-bottom: 1px solid var(--border);
+        background: #000;
+        z-index: 10;
+      }
+      .nav-item {
+        color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        font-size: 14px;
+        transition: 0.3s;
+      }
+      .nav-item.active {
+        color: var(--accent);
+        text-shadow: 0 0 10px var(--accent);
+      }
 
-        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+      .view {
+        display: none;
+        flex-grow: 1;
+        overflow: hidden;
+        height: calc(100vh - 65px);
+      }
+      .view.active {
+        display: flex;
+      }
 
-        .message { background: var(--chat-bubble); padding: 10px 15px; border-radius: 18px; max-width: 70%; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        
-        .admin-controls { display: flex; gap: 10px; padding: 10px; background: #fff; border-bottom: 1px solid #ddd; }
-        
-        .del-btn { color: var(--admin-color); cursor: pointer; font-size: 0.7rem; margin-left: 10px; border: none; background: none; font-weight: bold; }
-        
-        #input-area { background: white; padding: 15px; display: flex; gap: 10px; border-top: 1px solid #ddd; }
-        input { flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid #ddd; outline: none; }
-        button#send-btn { background: var(--accent-color); color: white; border: none; padding: 0 20px; border-radius: 20px; cursor: pointer; }
+      /* --- STATUS DOT --- */
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+      }
+      .status-online {
+        background: var(--online);
+        box-shadow: 0 0 8px var(--online);
+      }
+      .status-offline {
+        background: var(--offline);
+      }
+
+      /* --- CHAT SYSTEM --- */
+      .chat-layout {
+        display: flex;
+        width: 100%;
+        height: 100%;
+      }
+      .sidebar {
+        width: 260px;
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        background: #050505;
+      }
+      .contact-item {
+        padding: 15px;
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+        transition: 0.2s;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+      }
+      .contact-item:hover {
+        background: var(--glass);
+      }
+      .contact-item.selected {
+        border-left: 3px solid var(--accent);
+        background: rgba(0, 242, 255, 0.05);
+      }
+
+      .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #000;
+      }
+      #chat-msgs {
+        flex: 1;
+        overflow-y: auto;
+        padding: 25px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+      .msg {
+        padding: 10px 15px;
+        border-radius: 8px;
+        max-width: 70%;
+        font-size: 14px;
+      }
+      .msg.user {
+        align-self: flex-end;
+        background: var(--accent);
+        color: #000;
+      }
+      .msg.other {
+        align-self: flex-start;
+        background: var(--glass);
+        border: 1px solid var(--border);
+      }
+
+      /* --- WATER FIX --- */
+      #water-container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        background: #000;
+      }
+      #water-frame {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: #000;
+      }
+
+      /* --- WELCOME --- */
+      #welcome-screen {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+      #profile-card {
+        background: var(--glass);
+        padding: 40px;
+        border-radius: 8px;
+        width: 300px;
+        display: none;
+        border-left: 3px solid var(--accent);
+      }
     </style>
-</head>
-<body>
-
-    <div id="registration-overlay">
-        <div class="reg-card">
-            <h2>Choose a Username</h2>
-            <input type="text" id="reg-username" placeholder="Enter name..." maxlength="15">
-            <button id="save-name-btn" style="padding: 10px 20px; border-radius: 20px; border: none; background: var(--accent-color); color: white; cursor: pointer;">Join</button>
-            <p id="name-error">That name is already taken!</p>
-        </div>
+  </head>
+  <body onload="init()">
+    <div id="welcome-screen">
+      <div id="type-box" style="font-size: 2rem; font-weight: 300"></div>
+      <div id="profile-card">
+        <h3>Identity Initialization</h3>
+        <input
+          type="text"
+          id="username-input"
+          class="nexus-input"
+          placeholder="User designation..."
+        />
+        <button class="nexus-btn" onclick="register()">Confirm Entry</button>
+      </div>
     </div>
 
-    <div id="admin-bar" style="display: none;" class="admin-controls">
-        <span style="color: red; font-weight: bold;">ADMIN PANEL:</span>
-        <button id="clear-history" style="background: red; color: white; border: none; cursor: pointer; padding: 2px 10px; border-radius: 5px;">Clear All Chat</button>
+    <div id="hub">
+      <nav class="navbar">
+        <div class="nav-item" onclick="tab('water')">water</div>
+        <div class="nav-item active" onclick="tab('chat')">chat</div>
+        <div class="nav-item" onclick="tab('profile')">my profile</div>
+      </nav>
+
+      <div id="water" class="view">
+        <div id="water-container">
+          <iframe id="water-frame" src=""></iframe>
+        </div>
+      </div>
+
+      <div id="chat" class="view active">
+        <div class="chat-layout">
+          <div class="sidebar">
+            <div style="padding: 15px; font-size: 11px; opacity: 0.5">
+              CONTACTS
+            </div>
+            <div id="friend-list"></div>
+            <button
+              class="nexus-btn"
+              style="margin-top: auto"
+              onclick="addFriend()"
+            >
+              + Add Friend
+            </button>
+          </div>
+          <div class="chat-main">
+            <div
+              id="active-chat-user"
+              style="
+                padding: 15px 25px;
+                border-bottom: 1px solid var(--border);
+                font-size: 12px;
+                color: var(--accent);
+              "
+            >
+              Select a contact
+            </div>
+            <div id="chat-msgs"></div>
+            <div
+              style="
+                padding: 20px;
+                border-top: 1px solid var(--border);
+                display: flex;
+                gap: 10px;
+              "
+            >
+              <input
+                type="text"
+                id="chat-input"
+                class="nexus-input"
+                style="margin: 0"
+                placeholder="Message..."
+                onkeydown="if(event.key==='Enter') sendMsg()"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="profile" class="view">
+        <div style="display: flex; width: 100%">
+          <div
+            style="
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <h2 id="display-name"></h2>
+            <div id="my-status-area">
+              <span class="status-dot status-online"></span> Online
+            </div>
+          </div>
+          <div
+            class="sidebar"
+            style="width: 300px; border-left: 1px solid var(--border)"
+          >
+            <div style="padding: 15px; font-size: 11px; opacity: 0.5">
+              REQUESTS
+            </div>
+            <div id="req-list" style="padding: 15px"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div id="chat-box"></div>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyDKOq326tL8Kh1hraa_R0bV0MvYMUZotfk",
+        authDomain: "realtime-database-3505d.firebaseapp.com",
+        databaseURL:
+          "https://realtime-database-3505d-default-rtdb.firebaseio.com",
+        projectId: "realtime-database-3505d",
+        storageBucket: "realtime-database-3505d.firebasestorage.app",
+        messagingSenderId: "917293518076",
+        appId: "1:917293518076:web:1cd71d04e6a37af7afdb79",
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+      let myName = localStorage.getItem("nexus_user");
+      let activeChat = null;
 
-    <form id="message-form">
-        <div id="input-area">
-            <b id="display-name"></b>
-            <input type="text" id="message-input" placeholder="Message..." autocomplete="off" required>
-            <button type="submit" id="send-btn">Send</button>
-        </div>
-    </form>
+      function init() {
+        if (myName) {
+          showHub();
+        } else {
+          runWelcome();
+        }
+      }
 
-    <script type="module" src="script.js"></script>
-</body>
+      function runWelcome() {
+        const box = document.getElementById("type-box");
+        typeEffect(box, "Welcome to Nexus...", 80, () => {
+          setTimeout(() => {
+            box.innerHTML = "";
+            typeEffect(box, "Let's set up your profile", 60, () => {
+              setTimeout(() => {
+                box.style.display = "none";
+                document.getElementById("profile-card").style.display = "block";
+              }, 500);
+            });
+          }, 1000);
+        });
+      }
+
+      function typeEffect(el, txt, spd, cb) {
+        let i = 0;
+        function r() {
+          if (i < txt.length) {
+            el.innerHTML += txt.charAt(i);
+            i++;
+            setTimeout(r, spd);
+          } else if (cb) cb();
+        }
+        r();
+      }
+
+      async function register() {
+        const name = document.getElementById("username-input").value.trim();
+        if (!name) return;
+        const snap = await db.ref("users/" + name).once("value");
+        if (snap.exists()) alert("Name Taken!");
+        else {
+          await db.ref("users/" + name).set({ status: "online" });
+          localStorage.setItem("nexus_user", name);
+          location.reload();
+        }
+      }
+
+      function showHub() {
+        document.getElementById("welcome-screen").style.display = "none";
+        document.getElementById("hub").style.display = "flex";
+        setTimeout(
+          () => (document.getElementById("hub").style.opacity = "1"),
+          50
+        );
+        document.getElementById("display-name").innerText = myName;
+
+        // Set Online Status
+        const statusRef = db.ref("users/" + myName + "/status");
+        statusRef.set("online");
+        statusRef.onDisconnect().set("offline");
+
+        listenFriends();
+        listenRequests();
+      }
+
+      function tab(id) {
+        document
+          .querySelectorAll(".view")
+          .forEach((v) => v.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+        event.currentTarget.classList.add("active");
+
+        // Load Water only when clicked
+        if (id === "water") {
+          document.getElementById("water-frame").src =
+            "https://cgxlyxnlynjpbmdiywnrc3rhcnrtewvkdwnhdglvbml0d2fzc29zawdtv2.familyguy.in/signin.html";
+        }
+      }
+
+      function addFriend() {
+        const t = prompt("User designation:");
+        if (t && t !== myName) db.ref("requests/" + t).push({ from: myName });
+      }
+
+      function listenRequests() {
+        db.ref("requests/" + myName).on("value", (snap) => {
+          const box = document.getElementById("req-list");
+          box.innerHTML = "";
+          snap.forEach((c) => {
+            const div = document.createElement("div");
+            div.innerHTML = `${c.val().from} <button onclick="accept('${
+              c.val().from
+            }','${c.key}')">Accept</button>`;
+            box.appendChild(div);
+          });
+        });
+      }
+
+      async function accept(name, key) {
+        await db.ref("friends/" + myName + "/" + name).set(true);
+        await db.ref("friends/" + name + "/" + myName).set(true);
+        await db.ref("requests/" + myName + "/" + key).remove();
+      }
+
+      function listenFriends() {
+        db.ref("friends/" + myName).on("value", (snap) => {
+          const box = document.getElementById("friend-list");
+          box.innerHTML = "";
+          snap.forEach((c) => {
+            const friendName = c.key;
+            const div = document.createElement("div");
+            div.className = "contact-item";
+            div.id = "contact-" + friendName;
+            div.innerHTML = `<span class="status-dot" id="dot-${friendName}"></span> ${friendName}`;
+            div.onclick = () => openChat(friendName, div);
+            box.appendChild(div);
+
+            // Sync Status
+            db.ref("users/" + friendName + "/status").on("value", (s) => {
+              const dot = document.getElementById("dot-" + friendName);
+              if (dot) {
+                dot.className =
+                  "status-dot " +
+                  (s.val() === "online" ? "status-online" : "status-offline");
+              }
+            });
+          });
+        });
+      }
+
+      function openChat(user, el) {
+        activeChat = user;
+        document.getElementById("active-chat-user").innerText =
+          "Direct Link: " + user;
+        document
+          .querySelectorAll(".contact-item")
+          .forEach((i) => i.classList.remove("selected"));
+        el.classList.add("selected");
+
+        const chatId = [myName, user].sort().join("_");
+        db.ref("messages/" + chatId).off();
+        db.ref("messages/" + chatId).on("value", (snap) => {
+          const box = document.getElementById("chat-msgs");
+          box.innerHTML = "";
+          snap.forEach((c) => {
+            const d = c.val();
+            const div = document.createElement("div");
+            div.className = `msg ${d.sender === myName ? "user" : "other"}`;
+            div.innerText = d.text;
+            box.appendChild(div);
+          });
+          box.scrollTop = box.scrollHeight;
+        });
+      }
+
+      function sendMsg() {
+        const inp = document.getElementById("chat-input");
+        if (!activeChat || !inp.value.trim()) return;
+        const chatId = [myName, activeChat].sort().join("_");
+        db.ref("messages/" + chatId).push({
+          sender: myName,
+          text: inp.value,
+          time: Date.now(),
+        });
+        inp.value = "";
+      }
+    </script>
+  </body>
 </html>
