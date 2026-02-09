@@ -16,6 +16,7 @@
         --border: rgba(255, 255, 255, 0.1);
         --online: #00ff88;
         --offline: #555;
+        --alert: #ff4444;
       }
 
       body,
@@ -29,7 +30,71 @@
         overflow: hidden;
       }
 
-      /* --- UI HELPERS --- */
+      /* --- WATER CHAT OVERLAY --- */
+      #water-chat-container {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        position: relative;
+      }
+      #water-sidebar {
+        width: 300px;
+        height: 100%;
+        background: #050505;
+        border-left: 1px solid var(--border);
+        display: none;
+        flex-direction: column;
+      }
+      #water-toggle-btn {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        width: 50px;
+        height: 50px;
+        background: var(--accent);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 0 15px var(--accent);
+        z-index: 100;
+        font-size: 20px;
+        color: black;
+      }
+
+      /* --- SHOP & UI --- */
+      .shop-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px;
+        padding: 20px;
+        width: 80%;
+      }
+      .shop-item {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        padding: 15px;
+        text-align: center;
+        border-radius: 8px;
+        transition: 0.3s;
+      }
+      .shop-item:hover {
+        border-color: var(--accent);
+        transform: translateY(-5px);
+      }
+      .shop-item.owned {
+        border-color: var(--online);
+      }
+      .bg-preview {
+        width: 100%;
+        height: 100px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background-size: cover !important;
+        background-position: center !important;
+      }
       .nexus-input {
         width: 100%;
         background: rgba(0, 0, 0, 0.5);
@@ -39,6 +104,7 @@
         margin-bottom: 20px;
         border-radius: 4px;
         outline: none;
+        box-sizing: border-box;
       }
       .nexus-btn {
         width: 100%;
@@ -49,14 +115,35 @@
         cursor: pointer;
         transition: 0.3s;
         font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
       }
-      .nexus-btn:hover {
+      .nexus-btn:hover:not(:disabled) {
         background: var(--accent);
         color: black;
         box-shadow: 0 0 15px var(--accent);
       }
+      .nexus-btn.equip-btn {
+        border-color: var(--online);
+        color: var(--online);
+        margin-top: 5px;
+      }
 
-      /* --- HUB --- */
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+      }
+      .dot.online {
+        background: var(--online);
+        box-shadow: 0 0 10px var(--online);
+      }
+      .dot.offline {
+        background: var(--offline);
+      }
+
       #hub {
         display: none;
         width: 100%;
@@ -79,10 +166,27 @@
         cursor: pointer;
         font-size: 14px;
         transition: 0.3s;
+        position: relative;
+        text-transform: lowercase;
       }
       .nav-item.active {
         color: var(--accent);
         text-shadow: 0 0 10px var(--accent);
+      }
+
+      /* Notification Badge */
+      .badge {
+        position: absolute;
+        top: -5px;
+        right: -12px;
+        background: var(--alert);
+        color: white;
+        font-size: 9px;
+        padding: 2px 5px;
+        border-radius: 10px;
+        display: none;
+        font-weight: bold;
+        box-shadow: 0 0 10px var(--alert);
       }
 
       .view {
@@ -90,42 +194,28 @@
         flex-grow: 1;
         overflow: hidden;
         height: calc(100vh - 65px);
+        width: 100%;
       }
       .view.active {
         display: flex;
       }
 
-      /* --- STATUS DOT --- */
-      .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        display: inline-block;
-        margin-right: 8px;
-      }
-      .status-online {
-        background: var(--online);
-        box-shadow: 0 0 8px var(--online);
-      }
-      .status-offline {
-        background: var(--offline);
-      }
-
-      /* --- CHAT SYSTEM --- */
+      /* --- CHAT STYLES --- */
       .chat-layout {
         display: flex;
         width: 100%;
         height: 100%;
       }
       .sidebar {
-        width: 260px;
+        width: 280px;
         border-right: 1px solid var(--border);
         display: flex;
         flex-direction: column;
         background: #050505;
+        overflow-y: auto;
       }
       .contact-item {
-        padding: 15px;
+        padding: 12px 15px;
         border-bottom: 1px solid var(--border);
         cursor: pointer;
         transition: 0.2s;
@@ -133,33 +223,45 @@
         display: flex;
         align-items: center;
       }
-      .contact-item:hover {
-        background: var(--glass);
-      }
       .contact-item.selected {
         border-left: 3px solid var(--accent);
-        background: rgba(0, 242, 255, 0.05);
+        background: rgba(0, 242, 255, 0.1);
       }
-
+      .avatar-circle {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #111;
+        border: 1px solid var(--border);
+        object-fit: cover;
+        margin-right: 12px;
+      }
       .chat-main {
         flex: 1;
         display: flex;
         flex-direction: column;
         background: #000;
+        position: relative;
+        background-size: cover !important;
+        background-position: center !important;
       }
-      #chat-msgs {
+      .chat-msgs-box {
         flex: 1;
         overflow-y: auto;
         padding: 25px;
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        gap: 10px;
+        z-index: 1;
+        background: rgba(0, 0, 0, 0.4);
       }
       .msg {
         padding: 10px 15px;
         border-radius: 8px;
         max-width: 70%;
         font-size: 14px;
+        word-wrap: break-word;
+        position: relative;
       }
       .msg.user {
         align-self: flex-end;
@@ -168,46 +270,115 @@
       }
       .msg.other {
         align-self: flex-start;
-        background: var(--glass);
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--border);
+        backdrop-filter: blur(5px);
+      }
+
+      .chat-pfp-trigger {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #222;
+        margin-bottom: 5px;
+        cursor: pointer;
         border: 1px solid var(--border);
       }
 
-      /* --- WATER FIX --- */
-      #water-container {
+      /* --- REQUESTS UI --- */
+      .request-item {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 10px;
         width: 100%;
-        height: 100%;
-        position: relative;
-        background: #000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
       }
-      #water-frame {
-        width: 100%;
-        height: 100%;
+      .request-btn {
+        background: var(--online);
+        color: black;
         border: none;
-        background: #000;
+        padding: 4px 8px;
+        border-radius: 3px;
+        cursor: pointer;
+        font-weight: bold;
       }
 
-      /* --- WELCOME --- */
-      #welcome-screen {
+      /* --- PROFILE FIX --- */
+      .profile-view-container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        background-size: cover !important;
+        background-position: center !important;
+      }
+      .avatar-large {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        border: 2px solid var(--accent);
+        margin-bottom: 20px;
+        object-fit: cover;
+        background: #111;
+      }
+      .profile-card-ui {
+        background: rgba(0, 0, 0, 0.85);
+        padding: 40px;
+        border-radius: 15px;
+        backdrop-filter: blur(15px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 1px solid var(--border);
+        min-width: 320px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+
+      #money-pop {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--online);
+        color: black;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-weight: bold;
+        display: none;
+        z-index: 100;
+      }
+    </style>
+  </head>
+  <body onload="init()">
+    <div id="money-pop">+1 Nexus Credit</div>
+
+    <div
+      id="welcome-screen"
+      style="
         height: 100vh;
         display: flex;
         justify-content: center;
         align-items: center;
         flex-direction: column;
-      }
-      #profile-card {
-        background: var(--glass);
-        padding: 40px;
-        border-radius: 8px;
-        width: 300px;
-        display: none;
-        border-left: 3px solid var(--accent);
-      }
-    </style>
-  </head>
-  <body onload="init()">
-    <div id="welcome-screen">
+      "
+    >
       <div id="type-box" style="font-size: 2rem; font-weight: 300"></div>
-      <div id="profile-card">
+      <div
+        id="profile-card"
+        style="
+          background: var(--glass);
+          padding: 40px;
+          border-radius: 8px;
+          width: 300px;
+          display: none;
+          border-left: 3px solid var(--accent);
+        "
+      >
         <h3>Identity Initialization</h3>
         <input
           type="text"
@@ -222,50 +393,205 @@
     <div id="hub">
       <nav class="navbar">
         <div class="nav-item" onclick="tab('water')">water</div>
-        <div class="nav-item active" onclick="tab('chat')">chat</div>
-        <div class="nav-item" onclick="tab('profile')">my profile</div>
+        <div id="nav-chat" class="nav-item active" onclick="tab('chat')">
+          chat
+        </div>
+        <div class="nav-item" onclick="tab('shop')">shop</div>
+        <div class="nav-item" onclick="viewProfile(window.myName)">
+          my profile
+          <span id="notif-badge" class="badge">!</span>
+        </div>
       </nav>
 
       <div id="water" class="view">
-        <div id="water-container">
-          <iframe id="water-frame" src=""></iframe>
+        <div id="water-chat-container">
+          <iframe
+            id="water-frame"
+            src=""
+            style="flex: 1; border: none"
+          ></iframe>
+          <div id="water-toggle-btn" onclick="toggleWaterChat()">💬</div>
+          <div id="water-sidebar">
+            <div
+              style="
+                padding: 10px;
+                font-size: 11px;
+                color: var(--accent);
+                text-align: center;
+                border-bottom: 1px solid var(--border);
+              "
+            >
+              ACTIVE TERMINAL
+            </div>
+            <div id="water-chat-inner" class="chat-main" style="height: 100%">
+              <div id="water-msgs" class="chat-msgs-box"></div>
+              <div style="padding: 10px; border-top: 1px solid var(--border)">
+                <input
+                  type="text"
+                  id="water-chat-input"
+                  class="nexus-input"
+                  style="margin: 0; padding: 8px"
+                  placeholder="Message..."
+                  onkeydown="if(event.key==='Enter') sendMsg('water')"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <div id="chat" class="view active">
         <div class="chat-layout">
           <div class="sidebar">
-            <div style="padding: 15px; font-size: 11px; opacity: 0.5">
+            <div
+              style="
+                padding: 15px;
+                font-size: 11px;
+                opacity: 0.5;
+                letter-spacing: 2px;
+              "
+            >
+              CHANNELS
+            </div>
+            <div id="chatroom-list">
+              <div
+                class="contact-item"
+                onclick="openChat('Live Chatroom', this, 'global')"
+              >
+                <div
+                  class="avatar-circle"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: var(--accent);
+                    color: black;
+                    font-weight: bold;
+                  "
+                >
+                  #
+                </div>
+                <span>Live Chatroom</span>
+              </div>
+            </div>
+
+            <div
+              style="
+                padding: 15px;
+                font-size: 11px;
+                opacity: 0.5;
+                letter-spacing: 2px;
+                border-top: 1px solid var(--border);
+              "
+            >
+              GROUPS
+            </div>
+            <div id="group-list"></div>
+
+            <div
+              style="
+                padding: 15px;
+                font-size: 11px;
+                opacity: 0.5;
+                letter-spacing: 2px;
+                border-top: 1px solid var(--border);
+              "
+            >
               CONTACTS
             </div>
+            <input
+              type="text"
+              id="friend-search"
+              placeholder="Search friends..."
+              onkeyup="filterFriends()"
+              style="
+                margin: 0 15px 10px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid var(--border);
+                color: white;
+                padding: 5px;
+                font-size: 12px;
+              "
+            />
             <div id="friend-list"></div>
+
             <button
               class="nexus-btn"
-              style="margin-top: auto"
+              style="
+                margin-top: auto;
+                border: none;
+                background: rgba(255, 255, 255, 0.05);
+              "
               onclick="addFriend()"
             >
               + Add Friend
             </button>
           </div>
-          <div class="chat-main">
+          <div id="chat-pane" class="chat-main">
             <div
-              id="active-chat-user"
+              id="chat-header"
               style="
-                padding: 15px 25px;
+                padding: 10px 25px;
                 border-bottom: 1px solid var(--border);
-                font-size: 12px;
-                color: var(--accent);
+                display: flex;
+                align-items: center;
+                background: rgba(0, 0, 0, 0.8);
+                z-index: 2;
               "
             >
-              Select a contact
+              <img
+                id="header-pfp"
+                class="avatar-circle"
+                style="display: none; cursor: pointer"
+                onclick="groupInviteAction()"
+              />
+              <div
+                id="active-chat-user"
+                style="font-size: 12px; color: var(--accent); flex: 1"
+              >
+                Select a contact
+              </div>
+              <button
+                id="make-group-btn"
+                class="nexus-btn"
+                style="
+                  width: auto;
+                  font-size: 10px;
+                  margin-right: 10px;
+                  display: none;
+                "
+                onclick="createGroup()"
+              >
+                make a groupchat?
+              </button>
+              <button
+                id="manage-group-btn"
+                class="nexus-btn"
+                style="
+                  width: auto;
+                  font-size: 10px;
+                  margin-right: 10px;
+                  display: none;
+                "
+                onclick="manageGroup()"
+              >
+                Manage
+              </button>
+              <div
+                onclick="changeChatBG()"
+                style="cursor: pointer; opacity: 0.5; font-size: 18px"
+                title="Change Chat Background"
+              >
+                ⚙️
+              </div>
             </div>
-            <div id="chat-msgs"></div>
+            <div id="chat-msgs" class="chat-msgs-box"></div>
             <div
               style="
                 padding: 20px;
                 border-top: 1px solid var(--border);
-                display: flex;
-                gap: 10px;
+                background: rgba(0, 0, 0, 0.8);
+                z-index: 2;
               "
             >
               <input
@@ -274,37 +600,90 @@
                 class="nexus-input"
                 style="margin: 0"
                 placeholder="Message..."
-                onkeydown="if(event.key==='Enter') sendMsg()"
+                onkeydown="if(event.key==='Enter') sendMsg('main')"
               />
             </div>
           </div>
         </div>
       </div>
 
+      <div
+        id="shop"
+        class="view"
+        style="flex-direction: column; align-items: center; overflow-y: auto"
+      >
+        <h2 style="margin-top: 30px; letter-spacing: 3px">NEURAL MARKET</h2>
+        <div style="color: var(--accent); margin-bottom: 20px">
+          Balance: <span id="shop-balance">0</span> NC
+        </div>
+        <div class="shop-grid" id="shop-items-container"></div>
+      </div>
+
       <div id="profile" class="view">
-        <div style="display: flex; width: 100%">
-          <div
-            style="
-              flex: 1;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-            "
-          >
-            <h2 id="display-name"></h2>
-            <div id="my-status-area">
-              <span class="status-dot status-online"></span> Online
+        <div id="profile-bg-layer" class="profile-view-container">
+          <div class="profile-card-ui">
+            <input
+              type="file"
+              id="pfp-upload"
+              style="display: none"
+              accept="image/*"
+              onchange="handlePFP(this)"
+            />
+            <img id="display-pfp" class="avatar-large" src="" />
+            <h2
+              id="display-username"
+              style="
+                margin-top: 0;
+                letter-spacing: 2px;
+                text-transform: lowercase;
+                margin-bottom: 5px;
+              "
+            ></h2>
+            <div style="display: flex; align-items: center; gap: 5px">
+              <div id="status-dot" class="dot"></div>
+              <span
+                id="status-text"
+                style="font-size: 10px; font-weight: bold; letter-spacing: 1px"
+                >OFFLINE</span
+              >
             </div>
-          </div>
-          <div
-            class="sidebar"
-            style="width: 300px; border-left: 1px solid var(--border)"
-          >
-            <div style="padding: 15px; font-size: 11px; opacity: 0.5">
-              REQUESTS
+
+            <div
+              id="pending-requests-section"
+              style="
+                width: 100%;
+                margin-top: 20px;
+                border-top: 1px solid var(--border);
+                display: none;
+              "
+            >
+              <div
+                style="
+                  font-size: 10px;
+                  color: var(--accent);
+                  margin-top: 15px;
+                  letter-spacing: 1px;
+                "
+              >
+                PENDING REQUESTS
+              </div>
+              <div id="requests-list-container"></div>
             </div>
-            <div id="req-list" style="padding: 15px"></div>
+
+            <button
+              id="pfp-edit-btn"
+              class="nexus-btn"
+              style="
+                width: auto;
+                margin-top: 25px;
+                padding: 8px 20px;
+                font-size: 11px;
+                display: none;
+              "
+              onclick="document.getElementById('pfp-upload').click()"
+            >
+              Update Avatar
+            </button>
           </div>
         </div>
       </div>
@@ -323,30 +702,384 @@
       };
       firebase.initializeApp(firebaseConfig);
       const db = firebase.database();
-      let myName = localStorage.getItem("nexus_user");
-      let activeChat = null;
+      window.myName = localStorage.getItem("nexus_user");
+      let activeChat = null,
+        chatType = "none",
+        myBalance = 0,
+        myInventory = [],
+        myFriends = [];
+
+      const SHOP_ITEMS = [
+        {
+          id: "neon_city",
+          name: "Cyber Tokyo",
+          price: 5,
+          url: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?q=80&w=2070",
+        },
+        {
+          id: "deep_space",
+          name: "Void Star",
+          price: 15,
+          url: "https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=2040",
+        },
+        {
+          id: "matrix",
+          name: "Data Rain",
+          price: 30,
+          url: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070",
+        },
+        {
+          id: "synth",
+          name: "Synthwave Sun",
+          price: 50,
+          url: "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070",
+        },
+        {
+          id: "gtr_drift",
+          name: "gtr drift",
+          price: 0,
+          url: "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExdjQyZzd0aG52enZtbWZtdGk2Y2plZnVwYWF1M28ydWJyZngzZ29ndyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/10cXff6xep02Na/giphy.gif",
+          allowed: ["nath", "dom", "stien"],
+        },
+        {
+          id: "gtr_tuffy",
+          name: "gtr tuffy",
+          price: 0,
+          url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGNycnJxdjMzd3M1ODF0ajVxZW5teG5ubzc3cWRnbGZzdnNtc3N4bSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/9W1OcEo91AkJXjGj3v/giphy.gif",
+          allowed: ["dom", "stien"],
+        },
+      ];
 
       function init() {
-        if (myName) {
-          showHub();
+        if (window.myName) showHub();
+        else runWelcome();
+      }
+
+      function showHub() {
+        document.getElementById("welcome-screen").style.display = "none";
+        document.getElementById("hub").style.display = "flex";
+        setTimeout(
+          () => (document.getElementById("hub").style.opacity = "1"),
+          50
+        );
+        db.ref("users/" + window.myName + "/status").set("online");
+        db.ref("users/" + window.myName + "/status")
+          .onDisconnect()
+          .set("offline");
+
+        setInterval(() => {
+          db.ref("users/" + window.myName + "/balance").transaction(
+            (c) => (c || 0) + 1
+          );
+          const pop = document.getElementById("money-pop");
+          pop.style.display = "block";
+          setTimeout(() => (pop.style.display = "none"), 3000);
+        }, 60000);
+
+        db.ref("users/" + window.myName + "/balance").on("value", (snap) => {
+          if (window.myName === "dom" || window.myName === "stien") {
+            myBalance = 999999;
+            document.getElementById("shop-balance").innerText = "∞";
+          } else {
+            myBalance = snap.val() || 0;
+            document.getElementById("shop-balance").innerText = myBalance;
+          }
+        });
+
+        db.ref("users/" + window.myName + "/inventory").on("value", (snap) => {
+          myInventory = snap.val() || [];
+          renderShop();
+        });
+
+        listenFriends();
+        listenGroups();
+        listenRequests();
+      }
+
+      function filterFriends() {
+        const q = document.getElementById("friend-search").value.toLowerCase();
+        document
+          .querySelectorAll("#friend-list .contact-item")
+          .forEach((item) => {
+            item.style.display = item.innerText.toLowerCase().includes(q)
+              ? "flex"
+              : "none";
+          });
+      }
+
+      function openChat(id, el, type) {
+        activeChat = id;
+        chatType = type;
+        const hPfp = document.getElementById("header-pfp");
+        const groupBtn = document.getElementById("make-group-btn");
+        const manageBtn = document.getElementById("manage-group-btn");
+
+        hPfp.style.display = "block";
+        groupBtn.style.display = type === "private" ? "block" : "none";
+        manageBtn.style.display = "none";
+
+        if (type === "global") {
+          hPfp.style.display = "none";
+          document.getElementById("active-chat-user").innerText =
+            "Public Terminal";
+        } else if (type === "private") {
+          document.getElementById("active-chat-user").innerText =
+            "Direct Link: " + id;
+          db.ref("users/" + id + "/pfp").on("value", (snap) => {
+            hPfp.src = snap.val() || "https://via.placeholder.com/34";
+          });
+        } else if (type === "group") {
+          db.ref("groups/" + id).on("value", (snap) => {
+            const data = snap.val();
+            if (!data) return;
+            document.getElementById("active-chat-user").innerText =
+              "GC: " + data.name;
+            hPfp.src = "https://via.placeholder.com/34?text=GC";
+            if (data.owner === window.myName) manageBtn.style.display = "block";
+          });
+        }
+
+        document
+          .querySelectorAll(".contact-item")
+          .forEach((i) => i.classList.remove("selected"));
+        if (el) el.classList.add("selected");
+
+        const chatId =
+          type === "global"
+            ? "GLOBAL_CHAT"
+            : type === "group"
+            ? id
+            : [window.myName, id].sort().join("_");
+        db.ref("messages/" + chatId).off();
+        db.ref("messages/" + chatId).on("value", (snap) => {
+          const boxes = [
+            document.getElementById("chat-msgs"),
+            document.getElementById("water-msgs"),
+          ];
+          boxes.forEach((box) => {
+            box.innerHTML = "";
+            snap.forEach((c) => {
+              const d = c.val();
+              const isMe = d.sender === window.myName;
+
+              let pfpHtml = `<img class="chat-pfp-trigger" id="msg-pfp-${c.key}" src="https://via.placeholder.com/24" onclick="viewProfile('${d.sender}')">`;
+
+              if (d.type === "invite") {
+                box.innerHTML += `<div class="msg other"><span style="color:var(--accent)">INVITE:</span> ${d.text} <div class="invite-card"><button class="nexus-btn" style="font-size:10px" onclick="joinGroup('${d.groupId}')">Join Group</button></div></div>`;
+              } else {
+                box.innerHTML += `<div class="msg ${isMe ? "user" : "other"}">
+                    ${
+                      !isMe
+                        ? pfpHtml +
+                          `<span style="color:var(--accent); font-weight:bold; display:block; font-size:10px;">${d.sender}</span>`
+                        : ""
+                    }
+                    ${d.text}
+                  </div>`;
+
+                // Load PFPs for chat bubbles
+                if (!isMe) {
+                  db.ref("users/" + d.sender + "/pfp").once(
+                    "value",
+                    (pSnap) => {
+                      const img = document.getElementById(`msg-pfp-${c.key}`);
+                      if (img && pSnap.val()) img.src = pSnap.val();
+                    }
+                  );
+                }
+              }
+            });
+            box.scrollTop = box.scrollHeight;
+          });
+        });
+      }
+
+      function createGroup() {
+        const gn = prompt("Enter Group Name:");
+        if (!gn) return;
+        const gid = "group_" + Date.now();
+        db.ref("groups/" + gid).set({
+          name: gn,
+          owner: window.myName,
+          members: { [window.myName]: true, [activeChat]: true },
+        });
+        alert("Group Created!");
+      }
+
+      function groupInviteAction() {
+        if (chatType !== "group") return;
+        const friend = prompt("Invite who? (Enter designation)");
+        if (friend && myFriends.includes(friend)) {
+          const chatId = [window.myName, friend].sort().join("_");
+          db.ref("messages/" + chatId).push({
+            sender: window.myName,
+            type: "invite",
+            groupId: activeChat,
+            text: `I've invited you to join my group!`,
+            timestamp: Date.now(),
+          });
+          alert("Invite sent!");
         } else {
-          runWelcome();
+          alert("User not in your friend list.");
         }
       }
 
-      function runWelcome() {
-        const box = document.getElementById("type-box");
-        typeEffect(box, "Welcome to Nexus...", 80, () => {
-          setTimeout(() => {
-            box.innerHTML = "";
-            typeEffect(box, "Let's set up your profile", 60, () => {
-              setTimeout(() => {
-                box.style.display = "none";
-                document.getElementById("profile-card").style.display = "block";
-              }, 500);
-            });
-          }, 1000);
+      function joinGroup(gid) {
+        db.ref("groups/" + gid + "/members/" + window.myName).set(true);
+        alert("Joined Group!");
+      }
+
+      function manageGroup() {
+        db.ref("groups/" + activeChat + "/members").once("value", (snap) => {
+          const members = Object.keys(snap.val() || {});
+          const list = members.filter((m) => m !== window.myName).join(", ");
+          const kick = prompt(
+            "Current Members: " + list + "\n\nType a name to kick them:"
+          );
+          if (kick && members.includes(kick)) {
+            db.ref("groups/" + activeChat + "/members/" + kick).remove();
+            alert(kick + " removed.");
+          }
         });
+      }
+
+      function sendMsg(source) {
+        const inputId = source === "water" ? "water-chat-input" : "chat-input";
+        const inp = document.getElementById(inputId);
+        if (!activeChat || !inp.value.trim()) return;
+        const chatId =
+          chatType === "global"
+            ? "GLOBAL_CHAT"
+            : chatType === "group"
+            ? activeChat
+            : [window.myName, activeChat].sort().join("_");
+        db.ref("messages/" + chatId).push({
+          sender: window.myName,
+          text: inp.value,
+          timestamp: Date.now(),
+        });
+        inp.value = "";
+      }
+
+      function listenGroups() {
+        db.ref("groups").on("value", (snap) => {
+          const box = document.getElementById("group-list");
+          box.innerHTML = "";
+          snap.forEach((g) => {
+            const data = g.val();
+            if (data.members && data.members[window.myName]) {
+              const div = document.createElement("div");
+              div.className = "contact-item";
+              div.innerHTML = `<div class="avatar-circle" style="background:#222; text-align:center; line-height:34px;">G</div> <span>${data.name}</span>`;
+              div.onclick = () => openChat(g.key, div, "group");
+              box.appendChild(div);
+            }
+          });
+        });
+      }
+
+      function viewProfile(username) {
+        tab("profile");
+        document.getElementById("display-username").innerText = username;
+        document.getElementById("pfp-edit-btn").style.display =
+          username === window.myName ? "block" : "none";
+        document.getElementById("pending-requests-section").style.display =
+          username === window.myName ? "block" : "none";
+
+        db.ref("users/" + username).on("value", (snap) => {
+          const data = snap.val();
+          if (data) {
+            document.getElementById("display-pfp").src =
+              data.pfp || "https://via.placeholder.com/140?text=VOID";
+            document.getElementById("profile-bg-layer").style.background =
+              data.active_bg ? `url('${data.active_bg}')` : "#000";
+            const isOnline = data.status === "online";
+            document.getElementById("status-dot").className = `dot ${
+              isOnline ? "online" : "offline"
+            }`;
+            document.getElementById("status-text").innerText = isOnline
+              ? "ONLINE"
+              : "OFFLINE";
+            document.getElementById("status-text").style.color = isOnline
+              ? "var(--online)"
+              : "var(--offline)";
+          }
+        });
+      }
+
+      function tab(id) {
+        document
+          .querySelectorAll(".view, .nav-item")
+          .forEach((v) => v.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+        if (id === "water")
+          document.getElementById("water-frame").src =
+            "https://cgxlyxnlynjpbmdiywnrc3rhcnrtewvkdwnhdglvbml0d2fzc29zawdtv2.familyguy.in/signin.html";
+      }
+
+      function changeChatBG() {
+        const url = prompt("Enter Image URL:");
+        if (url)
+          document.getElementById(
+            "chat-pane"
+          ).style.background = `url('${url}')`;
+      }
+
+      function renderShop() {
+        const container = document.getElementById("shop-items-container");
+        container.innerHTML = "";
+        SHOP_ITEMS.forEach((item) => {
+          if (item.allowed && !item.allowed.includes(window.myName)) return;
+          const isOwned = myInventory.includes(item.id);
+          container.innerHTML += `<div class="shop-item ${
+            isOwned ? "owned" : ""
+          }"><div class="bg-preview" style="background: url('${
+            item.url
+          }');"></div><div style="font-weight:bold; font-size:14px;">${
+            item.name
+          }</div><div style="font-size:12px; opacity:0.6; margin-bottom:10px;">${
+            item.price
+          } Credits</div><button class="nexus-btn" style="padding:5px;" onclick="buyItem('${
+            item.id
+          }', ${item.price})">Get</button>${
+            isOwned
+              ? `<button class="nexus-btn equip-btn" style="padding:5px;" onclick="equipItem('${item.url}')">Equip</button>`
+              : ""
+          }</div>`;
+        });
+      }
+
+      async function buyItem(id, price) {
+        if (
+          myBalance < price &&
+          window.myName !== "dom" &&
+          window.myName !== "stien"
+        )
+          return alert("Insufficient Credits.");
+        if (!myInventory.includes(id)) {
+          myInventory.push(id);
+          await db
+            .ref("users/" + window.myName + "/inventory")
+            .set(myInventory);
+        }
+        if (price > 0 && window.myName !== "dom" && window.myName !== "stien")
+          await db
+            .ref("users/" + window.myName + "/balance")
+            .set(myBalance - price);
+        const item = SHOP_ITEMS.find((i) => i.id === id);
+        await db.ref("users/" + window.myName + "/active_bg").set(item.url);
+        alert(item.name + " unlocked!");
+      }
+
+      async function equipItem(url) {
+        await db.ref("users/" + window.myName + "/active_bg").set(url);
+        alert("Background Equipped.");
+      }
+
+      function toggleWaterChat() {
+        const sidebar = document.getElementById("water-sidebar");
+        sidebar.style.display =
+          sidebar.style.display === "flex" ? "none" : "flex";
       }
 
       function typeEffect(el, txt, spd, cb) {
@@ -360,140 +1093,105 @@
         }
         r();
       }
+      function runWelcome() {
+        const box = document.getElementById("type-box");
+        typeEffect(box, "Initializing Nexus...", 80, () => {
+          setTimeout(() => {
+            box.innerHTML = "";
+            typeEffect(box, "Welcome, Traveler.", 60, () => {
+              setTimeout(() => {
+                box.style.display = "none";
+                document.getElementById("profile-card").style.display = "block";
+              }, 500);
+            });
+          }, 1000);
+        });
+      }
 
       async function register() {
-        const name = document.getElementById("username-input").value.trim();
-        if (!name) return;
+        const name = document
+          .getElementById("username-input")
+          .value.trim()
+          .toLowerCase();
+        if (!name || name === "live chatroom") return alert("Invalid Name");
         const snap = await db.ref("users/" + name).once("value");
-        if (snap.exists()) alert("Name Taken!");
-        else {
-          await db.ref("users/" + name).set({ status: "online" });
-          localStorage.setItem("nexus_user", name);
-          location.reload();
-        }
+        if (!snap.exists())
+          await db.ref("users/" + name).set({
+            status: "online",
+            pfp: "",
+            balance: 0,
+            active_bg: "",
+            inventory: [],
+          });
+        localStorage.setItem("nexus_user", name);
+        location.reload();
       }
 
-      function showHub() {
-        document.getElementById("welcome-screen").style.display = "none";
-        document.getElementById("hub").style.display = "flex";
-        setTimeout(
-          () => (document.getElementById("hub").style.opacity = "1"),
-          50
-        );
-        document.getElementById("display-name").innerText = myName;
-
-        // Set Online Status
-        const statusRef = db.ref("users/" + myName + "/status");
-        statusRef.set("online");
-        statusRef.onDisconnect().set("offline");
-
-        listenFriends();
-        listenRequests();
-      }
-
-      function tab(id) {
-        document
-          .querySelectorAll(".view")
-          .forEach((v) => v.classList.remove("active"));
-        document
-          .querySelectorAll(".nav-item")
-          .forEach((n) => n.classList.remove("active"));
-        document.getElementById(id).classList.add("active");
-        event.currentTarget.classList.add("active");
-
-        // Load Water only when clicked
-        if (id === "water") {
-          document.getElementById("water-frame").src =
-            "https://cgxlyxnlynjpbmdiywnrc3rhcnrtewvkdwnhdglvbml0d2fzc29zawdtv2.familyguy.in/signin.html";
+      function handlePFP(input) {
+        if (input.files && input.files[0]) {
+          const reader = new FileReader();
+          reader.onload = (e) =>
+            db.ref("users/" + window.myName + "/pfp").set(e.target.result);
+          reader.readAsDataURL(input.files[0]);
         }
       }
 
       function addFriend() {
-        const t = prompt("User designation:");
-        if (t && t !== myName) db.ref("requests/" + t).push({ from: myName });
+        const t = prompt("User designation:").toLowerCase();
+        if (t && t !== window.myName) {
+          db.ref("requests/" + t + "/" + window.myName).set(true);
+          alert("Request sent to " + t);
+        }
       }
 
       function listenRequests() {
-        db.ref("requests/" + myName).on("value", (snap) => {
-          const box = document.getElementById("req-list");
-          box.innerHTML = "";
-          snap.forEach((c) => {
-            const div = document.createElement("div");
-            div.innerHTML = `${c.val().from} <button onclick="accept('${
-              c.val().from
-            }','${c.key}')">Accept</button>`;
-            box.appendChild(div);
-          });
+        db.ref("requests/" + window.myName).on("value", (snap) => {
+          const container = document.getElementById("requests-list-container");
+          const badge = document.getElementById("notif-badge");
+          container.innerHTML = "";
+          const requests = snap.val();
+
+          if (requests && Object.keys(requests).length > 0) {
+            badge.style.display = "block";
+            Object.keys(requests).forEach((sender) => {
+              const div = document.createElement("div");
+              div.className = "request-item";
+              div.innerHTML = `<span>${sender}</span> <button class="request-btn" onclick="acceptFriend('${sender}')">Accept</button>`;
+              container.appendChild(div);
+            });
+          } else {
+            badge.style.display = "none";
+          }
         });
       }
 
-      async function accept(name, key) {
-        await db.ref("friends/" + myName + "/" + name).set(true);
-        await db.ref("friends/" + name + "/" + myName).set(true);
-        await db.ref("requests/" + myName + "/" + key).remove();
+      function acceptFriend(sender) {
+        db.ref("friends/" + window.myName + "/" + sender).set(true);
+        db.ref("friends/" + sender + "/" + window.myName).set(true);
+        db.ref("requests/" + window.myName + "/" + sender).remove();
+        alert("Connected with " + sender);
       }
 
       function listenFriends() {
-        db.ref("friends/" + myName).on("value", (snap) => {
+        db.ref("friends/" + window.myName).on("value", (snap) => {
           const box = document.getElementById("friend-list");
           box.innerHTML = "";
+          myFriends = [];
           snap.forEach((c) => {
-            const friendName = c.key;
+            const f = c.key;
+            myFriends.push(f);
             const div = document.createElement("div");
             div.className = "contact-item";
-            div.id = "contact-" + friendName;
-            div.innerHTML = `<span class="status-dot" id="dot-${friendName}"></span> ${friendName}`;
-            div.onclick = () => openChat(friendName, div);
+            div.innerHTML = `<img id="side-pfp-${f}" class="avatar-circle" src="https://via.placeholder.com/34"> <span>${f}</span>`;
+            div.onclick = () => openChat(f, div, "private");
             box.appendChild(div);
-
-            // Sync Status
-            db.ref("users/" + friendName + "/status").on("value", (s) => {
-              const dot = document.getElementById("dot-" + friendName);
-              if (dot) {
-                dot.className =
-                  "status-dot " +
-                  (s.val() === "online" ? "status-online" : "status-offline");
-              }
+            db.ref("users/" + f + "/pfp").on("value", (s) => {
+              if (document.getElementById("side-pfp-" + f))
+                document.getElementById("side-pfp-" + f).src =
+                  s.val() || "https://via.placeholder.com/34";
             });
           });
         });
-      }
-
-      function openChat(user, el) {
-        activeChat = user;
-        document.getElementById("active-chat-user").innerText =
-          "Direct Link: " + user;
-        document
-          .querySelectorAll(".contact-item")
-          .forEach((i) => i.classList.remove("selected"));
-        el.classList.add("selected");
-
-        const chatId = [myName, user].sort().join("_");
-        db.ref("messages/" + chatId).off();
-        db.ref("messages/" + chatId).on("value", (snap) => {
-          const box = document.getElementById("chat-msgs");
-          box.innerHTML = "";
-          snap.forEach((c) => {
-            const d = c.val();
-            const div = document.createElement("div");
-            div.className = `msg ${d.sender === myName ? "user" : "other"}`;
-            div.innerText = d.text;
-            box.appendChild(div);
-          });
-          box.scrollTop = box.scrollHeight;
-        });
-      }
-
-      function sendMsg() {
-        const inp = document.getElementById("chat-input");
-        if (!activeChat || !inp.value.trim()) return;
-        const chatId = [myName, activeChat].sort().join("_");
-        db.ref("messages/" + chatId).push({
-          sender: myName,
-          text: inp.value,
-          time: Date.now(),
-        });
-        inp.value = "";
       }
     </script>
   </body>
