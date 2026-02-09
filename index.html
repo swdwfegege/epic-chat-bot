@@ -123,6 +123,10 @@
         color: black;
         box-shadow: 0 0 15px var(--accent);
       }
+      .nexus-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
       .nexus-btn.equip-btn {
         border-color: var(--online);
         color: var(--online);
@@ -174,7 +178,6 @@
         text-shadow: 0 0 10px var(--accent);
       }
 
-      /* Notification Badge */
       .badge {
         position: absolute;
         top: -5px;
@@ -283,28 +286,7 @@
         margin-bottom: 5px;
         cursor: pointer;
         border: 1px solid var(--border);
-      }
-
-      /* --- REQUESTS UI --- */
-      .request-item {
-        background: rgba(255, 255, 255, 0.05);
-        padding: 10px;
-        border-radius: 5px;
-        margin-top: 10px;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 12px;
-      }
-      .request-btn {
-        background: var(--online);
-        color: black;
-        border: none;
-        padding: 4px 8px;
-        border-radius: 3px;
-        cursor: pointer;
-        font-weight: bold;
+        display: block;
       }
 
       /* --- PROFILE FIX --- */
@@ -351,6 +333,37 @@
         font-weight: bold;
         display: none;
         z-index: 100;
+        animation: slideUp 0.5s ease-out;
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translateY(50px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .invite-card {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 10px;
+        margin-top: 5px;
+        border-radius: 5px;
+        border: 1px solid var(--accent);
+      }
+
+      .request-item {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 8px;
+        margin-bottom: 5px;
+        border-radius: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
       }
     </style>
   </head>
@@ -367,7 +380,10 @@
         flex-direction: column;
       "
     >
-      <div id="type-box" style="font-size: 2rem; font-weight: 300"></div>
+      <div
+        id="type-box"
+        style="font-size: 2rem; font-weight: 300; margin-bottom: 20px"
+      ></div>
       <div
         id="profile-card"
         style="
@@ -398,8 +414,7 @@
         </div>
         <div class="nav-item" onclick="tab('shop')">shop</div>
         <div class="nav-item" onclick="viewProfile(window.myName)">
-          my profile
-          <span id="notif-badge" class="badge">!</span>
+          my profile <span id="notif-badge" class="badge">!</span>
         </div>
       </nav>
 
@@ -474,7 +489,6 @@
                 <span>Live Chatroom</span>
               </div>
             </div>
-
             <div
               style="
                 padding: 15px;
@@ -487,7 +501,6 @@
               GROUPS
             </div>
             <div id="group-list"></div>
-
             <div
               style="
                 padding: 15px;
@@ -514,7 +527,6 @@
               "
             />
             <div id="friend-list"></div>
-
             <button
               class="nexus-btn"
               style="
@@ -647,7 +659,6 @@
                 >OFFLINE</span
               >
             </div>
-
             <div
               id="pending-requests-section"
               style="
@@ -669,7 +680,6 @@
               </div>
               <div id="requests-list-container"></div>
             </div>
-
             <button
               id="pfp-edit-btn"
               class="nexus-btn"
@@ -736,14 +746,14 @@
         },
         {
           id: "gtr_drift",
-          name: "gtr drift",
+          name: "GTR Drift",
           price: 0,
           url: "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExdjQyZzd0aG52enZtbWZtdGk2Y2plZnVwYWF1M28ydWJyZngzZ29ndyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/10cXff6xep02Na/giphy.gif",
           allowed: ["nath", "dom", "stien"],
         },
         {
           id: "gtr_tuffy",
-          name: "gtr tuffy",
+          name: "GTR Tuffy",
           price: 0,
           url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGNycnJxdjMzd3M1ODF0ajVxZW5teG5ubzc3cWRnbGZzdnNtc3N4bSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/9W1OcEo91AkJXjGj3v/giphy.gif",
           allowed: ["dom", "stien"],
@@ -755,6 +765,32 @@
         else runWelcome();
       }
 
+      function runWelcome() {
+        const text = "Initializing Nexus Terminal...";
+        let i = 0;
+        const interval = setInterval(() => {
+          document.getElementById("type-box").innerText += text[i];
+          i++;
+          if (i === text.length) {
+            clearInterval(interval);
+            document.getElementById("profile-card").style.display = "block";
+          }
+        }, 50);
+      }
+
+      function register() {
+        const name = document
+          .getElementById("username-input")
+          .value.trim()
+          .toLowerCase();
+        if (name) {
+          localStorage.setItem("nexus_user", name);
+          window.myName = name;
+          db.ref("users/" + name).update({ last_login: Date.now() });
+          location.reload();
+        }
+      }
+
       function showHub() {
         document.getElementById("welcome-screen").style.display = "none";
         document.getElementById("hub").style.display = "flex";
@@ -762,6 +798,7 @@
           () => (document.getElementById("hub").style.opacity = "1"),
           50
         );
+
         db.ref("users/" + window.myName + "/status").set("online");
         db.ref("users/" + window.myName + "/status")
           .onDisconnect()
@@ -777,17 +814,14 @@
         }, 60000);
 
         db.ref("users/" + window.myName + "/balance").on("value", (snap) => {
-          if (
-            window.myName === "dom" ||
-            window.myName === "stien" ||
-            window.myName === "nath"
-          ) {
+          if (window.myName === "dom" || window.myName === "stien") {
             myBalance = 999999;
             document.getElementById("shop-balance").innerText = "∞";
           } else {
             myBalance = snap.val() || 0;
             document.getElementById("shop-balance").innerText = myBalance;
           }
+          renderShop();
         });
 
         db.ref("users/" + window.myName + "/inventory").on("value", (snap) => {
@@ -800,15 +834,56 @@
         listenRequests();
       }
 
-      function filterFriends() {
-        const q = document.getElementById("friend-search").value.toLowerCase();
-        document
-          .querySelectorAll("#friend-list .contact-item")
-          .forEach((item) => {
-            item.style.display = item.innerText.toLowerCase().includes(q)
-              ? "flex"
-              : "none";
+      function listenFriends() {
+        db.ref("users/" + window.myName + "/friends").on("value", (snap) => {
+          const list = document.getElementById("friend-list");
+          list.innerHTML = "";
+          myFriends = [];
+          snap.forEach((f) => {
+            const fName = f.key;
+            myFriends.push(fName);
+            const div = document.createElement("div");
+            div.className = "contact-item";
+            div.innerHTML = `<img id="sidebar-pfp-${fName}" class="avatar-circle" src="https://via.placeholder.com/34"> <span>${fName}</span>`;
+            div.onclick = () => openChat(fName, div, "private");
+            list.appendChild(div);
+            db.ref("users/" + fName + "/pfp").on("value", (s) => {
+              const img = document.getElementById(`sidebar-pfp-${fName}`);
+              if (img) img.src = s.val() || "https://via.placeholder.com/34";
+            });
           });
+        });
+      }
+
+      function addFriend() {
+        const f = prompt("Enter designation:").toLowerCase();
+        if (f && f !== window.myName) {
+          db.ref("requests/" + f + "/" + window.myName).set(true);
+          alert("Request sent.");
+        }
+      }
+
+      function listenRequests() {
+        db.ref("requests/" + window.myName).on("value", (snap) => {
+          const container = document.getElementById("requests-list-container");
+          const badge = document.getElementById("notif-badge");
+          container.innerHTML = "";
+          let count = 0;
+          snap.forEach((r) => {
+            count++;
+            const div = document.createElement("div");
+            div.className = "request-item";
+            div.innerHTML = `<span>${r.key}</span> <button class="nexus-btn" style="width:auto; padding:2px 10px;" onclick="acceptFriend('${r.key}')">Accept</button>`;
+            container.appendChild(div);
+          });
+          badge.style.display = count > 0 ? "block" : "none";
+        });
+      }
+
+      function acceptFriend(name) {
+        db.ref("users/" + window.myName + "/friends/" + name).set(true);
+        db.ref("users/" + name + "/friends/" + window.myName).set(true);
+        db.ref("requests/" + window.myName + "/" + name).remove();
       }
 
       function openChat(id, el, type) {
@@ -865,23 +940,17 @@
             snap.forEach((c) => {
               const d = c.val();
               const isMe = d.sender === window.myName;
-
-              let pfpHtml = `<img class="chat-pfp-trigger" id="msg-pfp-${c.key}" src="https://via.placeholder.com/24" onclick="viewProfile('${d.sender}')">`;
-
               if (d.type === "invite") {
                 box.innerHTML += `<div class="msg other"><span style="color:var(--accent)">INVITE:</span> ${d.text} <div class="invite-card"><button class="nexus-btn" style="font-size:10px" onclick="joinGroup('${d.groupId}')">Join Group</button></div></div>`;
               } else {
                 box.innerHTML += `<div class="msg ${isMe ? "user" : "other"}">
                     ${
                       !isMe
-                        ? pfpHtml +
-                          `<span style="color:var(--accent); font-weight:bold; display:block; font-size:10px;">${d.sender}</span>`
+                        ? `<img class="chat-pfp-trigger" id="msg-pfp-${c.key}" src="https://via.placeholder.com/24" onclick="viewProfile('${d.sender}')"><span style="color:var(--accent); font-weight:bold; display:block; font-size:10px;">${d.sender}</span>`
                         : ""
                     }
                     ${d.text}
                   </div>`;
-
-                // Load PFPs for chat bubbles
                 if (!isMe) {
                   db.ref("users/" + d.sender + "/pfp").once(
                     "value",
@@ -895,55 +964,6 @@
             });
             box.scrollTop = box.scrollHeight;
           });
-        });
-      }
-
-      function createGroup() {
-        const gn = prompt("Enter Group Name:");
-        if (!gn) return;
-        const gid = "group_" + Date.now();
-        db.ref("groups/" + gid).set({
-          name: gn,
-          owner: window.myName,
-          members: { [window.myName]: true, [activeChat]: true },
-        });
-        alert("Group Created!");
-      }
-
-      function groupInviteAction() {
-        if (chatType !== "group") return;
-        const friend = prompt("Invite who? (Enter designation)");
-        if (friend && myFriends.includes(friend)) {
-          const chatId = [window.myName, friend].sort().join("_");
-          db.ref("messages/" + chatId).push({
-            sender: window.myName,
-            type: "invite",
-            groupId: activeChat,
-            text: `I've invited you to join my group!`,
-            timestamp: Date.now(),
-          });
-          alert("Invite sent!");
-        } else {
-          alert("User not in your friend list.");
-        }
-      }
-
-      function joinGroup(gid) {
-        db.ref("groups/" + gid + "/members/" + window.myName).set(true);
-        alert("Joined Group!");
-      }
-
-      function manageGroup() {
-        db.ref("groups/" + activeChat + "/members").once("value", (snap) => {
-          const members = Object.keys(snap.val() || {});
-          const list = members.filter((m) => m !== window.myName).join(", ");
-          const kick = prompt(
-            "Current Members: " + list + "\n\nType a name to kick them:"
-          );
-          if (kick && members.includes(kick)) {
-            db.ref("groups/" + activeChat + "/members/" + kick).remove();
-            alert(kick + " removed.");
-          }
         });
       }
 
@@ -965,6 +985,18 @@
         inp.value = "";
       }
 
+      function createGroup() {
+        const gn = prompt("Enter Group Name:");
+        if (!gn) return;
+        const gid = "group_" + Date.now();
+        db.ref("groups/" + gid).set({
+          name: gn,
+          owner: window.myName,
+          members: { [window.myName]: true, [activeChat]: true },
+        });
+        alert("Group Created!");
+      }
+
       function listenGroups() {
         db.ref("groups").on("value", (snap) => {
           const box = document.getElementById("group-list");
@@ -980,6 +1012,58 @@
             }
           });
         });
+      }
+
+      function renderShop() {
+        const container = document.getElementById("shop-items-container");
+        container.innerHTML = "";
+        SHOP_ITEMS.forEach((item) => {
+          if (item.allowed && !item.allowed.includes(window.myName)) return;
+          const isOwned = myInventory.includes(item.id);
+          container.innerHTML += `
+            <div class="shop-item ${isOwned ? "owned" : ""}">
+              <div class="bg-preview" style="background: url('${
+                item.url
+              }');"></div>
+              <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">${
+                item.name
+              }</div>
+              <div style="font-size:12px; opacity:0.7; margin-bottom:10px;">${
+                item.price
+              } NC</div>
+              <button class="nexus-btn ${
+                isOwned ? "equip-btn" : ""
+              }" onclick="${
+            isOwned
+              ? `equip('${item.url}')`
+              : `buy('${item.id}', ${item.price})`
+          }" ${!isOwned && myBalance < item.price ? "disabled" : ""}>
+                ${isOwned ? "Equip" : "Purchase"}
+              </button>
+            </div>`;
+        });
+      }
+
+      function buy(id, price) {
+        if (myBalance >= price) {
+          db.ref("users/" + window.myName + "/balance").set(myBalance - price);
+          myInventory.push(id);
+          db.ref("users/" + window.myName + "/inventory").set(myInventory);
+        }
+      }
+
+      function equip(url) {
+        db.ref("users/" + window.myName + "/active_bg").set(url);
+        alert("Background Synchronized.");
+      }
+
+      function handlePFP(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) =>
+          db.ref("users/" + window.myName + "/pfp").set(e.target.result);
+        reader.readAsDataURL(file);
       }
 
       function viewProfile(username) {
@@ -1021,26 +1105,18 @@
             "https://cgxlyxnlynjpbmdiywnrc3rhcnrtewvkdwnhdglvbml0d2fzc29zawdtv2.familyguy.in/signin.html";
       }
 
+      function toggleWaterChat() {
+        const sidebar = document.getElementById("water-sidebar");
+        sidebar.style.display =
+          sidebar.style.display === "flex" ? "none" : "flex";
+      }
+
       function changeChatBG() {
         const url = prompt("Enter Image URL:");
         if (url)
           document.getElementById(
             "chat-pane"
           ).style.background = `url('${url}')`;
-      }
-
-      function renderShop() {
-        const container = document.getElementById("shop-items-container");
-        container.innerHTML = "";
-        SHOP_ITEMS.forEach((item) => {
-          if (item.allowed && !item.allowed.includes(window.myName)) return;
-          const isOwned = myInventory.includes(item.id);
-          container.innerHTML += `<div class="shop-item ${
-            isOwned ? "owned" : ""
-          }"><div class="bg-preview" style="background: url('${
-            item.url
-          }')"></div>`;
-        });
       }
     </script>
   </body>
