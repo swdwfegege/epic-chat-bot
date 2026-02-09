@@ -777,7 +777,11 @@
         }, 60000);
 
         db.ref("users/" + window.myName + "/balance").on("value", (snap) => {
-          if (window.myName === "dom" || window.myName === "stien") {
+          if (
+            window.myName === "dom" ||
+            window.myName === "stien" ||
+            window.myName === "nath"
+          ) {
             myBalance = 999999;
             document.getElementById("shop-balance").innerText = "∞";
           } else {
@@ -1035,162 +1039,7 @@
             isOwned ? "owned" : ""
           }"><div class="bg-preview" style="background: url('${
             item.url
-          }');"></div><div style="font-weight:bold; font-size:14px;">${
-            item.name
-          }</div><div style="font-size:12px; opacity:0.6; margin-bottom:10px;">${
-            item.price
-          } Credits</div><button class="nexus-btn" style="padding:5px;" onclick="buyItem('${
-            item.id
-          }', ${item.price})">Get</button>${
-            isOwned
-              ? `<button class="nexus-btn equip-btn" style="padding:5px;" onclick="equipItem('${item.url}')">Equip</button>`
-              : ""
-          }</div>`;
-        });
-      }
-
-      async function buyItem(id, price) {
-        if (
-          myBalance < price &&
-          window.myName !== "dom" &&
-          window.myName !== "stien"
-        )
-          return alert("Insufficient Credits.");
-        if (!myInventory.includes(id)) {
-          myInventory.push(id);
-          await db
-            .ref("users/" + window.myName + "/inventory")
-            .set(myInventory);
-        }
-        if (price > 0 && window.myName !== "dom" && window.myName !== "stien")
-          await db
-            .ref("users/" + window.myName + "/balance")
-            .set(myBalance - price);
-        const item = SHOP_ITEMS.find((i) => i.id === id);
-        await db.ref("users/" + window.myName + "/active_bg").set(item.url);
-        alert(item.name + " unlocked!");
-      }
-
-      async function equipItem(url) {
-        await db.ref("users/" + window.myName + "/active_bg").set(url);
-        alert("Background Equipped.");
-      }
-
-      function toggleWaterChat() {
-        const sidebar = document.getElementById("water-sidebar");
-        sidebar.style.display =
-          sidebar.style.display === "flex" ? "none" : "flex";
-      }
-
-      function typeEffect(el, txt, spd, cb) {
-        let i = 0;
-        function r() {
-          if (i < txt.length) {
-            el.innerHTML += txt.charAt(i);
-            i++;
-            setTimeout(r, spd);
-          } else if (cb) cb();
-        }
-        r();
-      }
-      function runWelcome() {
-        const box = document.getElementById("type-box");
-        typeEffect(box, "Initializing Nexus...", 80, () => {
-          setTimeout(() => {
-            box.innerHTML = "";
-            typeEffect(box, "Welcome, Traveler.", 60, () => {
-              setTimeout(() => {
-                box.style.display = "none";
-                document.getElementById("profile-card").style.display = "block";
-              }, 500);
-            });
-          }, 1000);
-        });
-      }
-
-      async function register() {
-        const name = document
-          .getElementById("username-input")
-          .value.trim()
-          .toLowerCase();
-        if (!name || name === "live chatroom") return alert("Invalid Name");
-        const snap = await db.ref("users/" + name).once("value");
-        if (!snap.exists())
-          await db.ref("users/" + name).set({
-            status: "online",
-            pfp: "",
-            balance: 0,
-            active_bg: "",
-            inventory: [],
-          });
-        localStorage.setItem("nexus_user", name);
-        location.reload();
-      }
-
-      function handlePFP(input) {
-        if (input.files && input.files[0]) {
-          const reader = new FileReader();
-          reader.onload = (e) =>
-            db.ref("users/" + window.myName + "/pfp").set(e.target.result);
-          reader.readAsDataURL(input.files[0]);
-        }
-      }
-
-      function addFriend() {
-        const t = prompt("User designation:").toLowerCase();
-        if (t && t !== window.myName) {
-          db.ref("requests/" + t + "/" + window.myName).set(true);
-          alert("Request sent to " + t);
-        }
-      }
-
-      function listenRequests() {
-        db.ref("requests/" + window.myName).on("value", (snap) => {
-          const container = document.getElementById("requests-list-container");
-          const badge = document.getElementById("notif-badge");
-          container.innerHTML = "";
-          const requests = snap.val();
-
-          if (requests && Object.keys(requests).length > 0) {
-            badge.style.display = "block";
-            Object.keys(requests).forEach((sender) => {
-              const div = document.createElement("div");
-              div.className = "request-item";
-              div.innerHTML = `<span>${sender}</span> <button class="request-btn" onclick="acceptFriend('${sender}')">Accept</button>`;
-              container.appendChild(div);
-            });
-          } else {
-            badge.style.display = "none";
-          }
-        });
-      }
-
-      function acceptFriend(sender) {
-        db.ref("friends/" + window.myName + "/" + sender).set(true);
-        db.ref("friends/" + sender + "/" + window.myName).set(true);
-        db.ref("requests/" + window.myName + "/" + sender).remove();
-        alert("Connected with " + sender);
-      }
-
-      function listenFriends() {
-        db.ref("friends/" + window.myName).on("value", (snap) => {
-          const box = document.getElementById("friend-list");
-          box.innerHTML = "";
-          myFriends = [];
-          snap.forEach((c) => {
-            const f = c.key;
-            myFriends.push(f);
-            const div = document.createElement("div");
-            div.className = "contact-item";
-            div.innerHTML = `<img id="side-pfp-${f}" class="avatar-circle" src="https://via.placeholder.com/34"> <span>${f}</span>`;
-            div.onclick = () => openChat(f, div, "private");
-            box.appendChild(div);
-            db.ref("users/" + f + "/pfp").on("value", (s) => {
-              if (document.getElementById("side-pfp-" + f))
-                document.getElementById("side-pfp-" + f).src =
-                  s.val() || "https://via.placeholder.com/34";
-            });
-          });
+          }')"></div>`;
         });
       }
     </script>
