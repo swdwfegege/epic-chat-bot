@@ -62,16 +62,6 @@
         font-size: 20px;
         color: black;
       }
-      /* Style for system join messages */
-      .msg[data-sender="SYSTEM"] {
-        align-self: center;
-        background: transparent;
-        border: none;
-        color: var(--accent);
-        font-size: 11px;
-        font-style: italic;
-        opacity: 0.7;
-      }
 
       /* --- SHOP & UI --- */
       .shop-grid {
@@ -859,11 +849,8 @@
         const card = document.getElementById("profile-card");
 
         const interval = setInterval(() => {
-          // If the character is a space, use the HTML entity for a space
-          const char = text[i] === " " ? "&nbsp;" : text[i];
-          box.innerHTML += char;
+          box.innerText += text[i];
           i++;
-          // ... rest of code
 
           if (i === text.length) {
             clearInterval(interval);
@@ -1084,24 +1071,6 @@
             : [window.myName, id].sort().join("_");
 
         markMessagesSeen(chatIdFinal);
-        function renderMessage(container, id, d) {
-          const div = document.createElement("div");
-
-          // Logic for styling
-          if (d.sender === "SYSTEM") {
-            div.className = "msg"; // We'll style this with the CSS I gave you
-            div.setAttribute("data-sender", "SYSTEM");
-          } else {
-            div.className =
-              d.sender === window.myName ? "msg user" : "msg other";
-          }
-
-          // Set the content
-          div.innerText = d.text;
-
-          // Add to the chat box
-          container.appendChild(div);
-        }
 
         msgRef.on("child_added", (snap) => {
           const d = snap.val();
@@ -1355,83 +1324,6 @@
         localStorage.setItem("nexus_user", targetAccount);
         window.myName = targetAccount;
         location.reload();
-      }
-      // 1. Triggered when clicking the Group PFP
-      function groupInviteAction() {
-        if (chatType !== "group") return;
-
-        const friendToInvite = prompt(
-          "Enter the username of the friend you want to invite to this group:"
-        );
-        if (!friendToInvite) return;
-
-        // Check if the user exists and is your friend
-        if (myFriends.includes(friendToInvite.toLowerCase())) {
-          inviteToGroup(activeChat, friendToInvite.toLowerCase());
-        } else {
-          alert("That user is not in your contacts.");
-        }
-      }
-
-      // 2. Writes the invite to the database
-      function inviteToGroup(groupId, friendName) {
-        db.ref(`groups/${groupId}`).once("value", (snap) => {
-          const groupData = snap.val();
-          if (!groupData) return;
-
-          // Add an invite record for the friend to see
-          db.ref(`invites/${friendName}/${groupId}`).set({
-            groupName: groupData.name,
-            invitedBy: window.myName,
-            timestamp: Date.now(),
-          });
-          alert(`Invite sent to ${friendName}!`);
-        });
-      }
-
-      // 3. Listen for incoming group invites (Add this inside showHub)
-      function listenGroupInvites() {
-        db.ref(`invites/${window.myName}`).on("value", (snap) => {
-          const badge = document.getElementById("notif-badge");
-          const container = document.getElementById("requests-list-container");
-
-          // Show requests section if it's hidden
-          document.getElementById("pending-requests-section").style.display =
-            "block";
-
-          snap.forEach((invite) => {
-            const groupId = invite.key;
-            const data = invite.val();
-
-            const div = document.createElement("div");
-            div.className = "request-item";
-            div.innerHTML = `
-                <div style="font-size:11px">Join <b>${data.groupName}</b>?</div>
-                <button class="nexus-btn" style="width:auto; padding:2px 10px; border-color:var(--online); color:var(--online);" 
-                    onclick="acceptGroupInvite('${groupId}')">Join</button>
-            `;
-            container.appendChild(div);
-            badge.style.display = "block";
-          });
-        });
-      }
-      function acceptGroupInvite(groupId) {
-        // 1. Add the user to the group members list
-        db.ref(`groups/${groupId}/members/${window.myName}`)
-          .set(true)
-          .then(() => {
-            // 2. Send the "joined" system message
-            db.ref(`messages/${groupId}`).push({
-              sender: "SYSTEM", // Labeling it as SYSTEM so you can style it differently
-              text: `${window.myName} has joined the group`,
-              timestamp: Date.now(),
-            });
-
-            // 3. Remove the invite and refresh
-            db.ref(`invites/${window.myName}/${groupId}`).remove();
-            alert("Joined group successfully!");
-            location.reload();
-          });
       }
     </script>
   </body>
