@@ -436,6 +436,14 @@
           my profile <span id="notif-badge" class="badge">!</span>
         </div>
       </nav>
+      <div
+        id="switch-dom-tab"
+        class="nav-item"
+        onclick="switchAccount('dom')"
+        style="display: none; color: var(--alert)"
+      >
+        switch to dom
+      </div>
 
       <div id="water" class="view">
         <div id="water-chat-container">
@@ -1313,6 +1321,15 @@
               }
             });
           });
+      }
+      function switchAccount(targetAccount) {
+        localStorage.setItem("nexus_user", targetAccount);
+        window.myName = targetAccount;
+        location.reload();
+      }
+      // Show switch tab only for stien
+      if (window.myName === "stien") {
+        document.getElementById("switch-dom-tab").style.display = "block";
       }
     </script>
   </body>
