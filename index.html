@@ -376,8 +376,11 @@
   </head>
   <body onload="init()">
     <div id="money-pop">+1 Nexus Credit</div>
-    <audio id="profile-music" loop></audio>
-
+<body onload="init()">
+    <audio id="profile-audio" preload="auto">
+      <source src="Greenday_-_American_Idiot_(mp3.pm).mp3" type="audio/mpeg">
+    </audio>
+    <div id="money-pop">+1 Nexus Credit</div>
     <div
       id="welcome-screen"
       style="
@@ -792,7 +795,7 @@
           name: "bangs baner",
           price: 0,
           url: "data:image/jpeg;base64,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", // URL removed - add back later
-          allowed: ["dom", "bang1"],
+          allowed: ["dom", "bang"],
         },
         {
           id: "gtr_drifting",
@@ -803,7 +806,7 @@
         },
         {
           id: "green_day",
-          name: "greenday",
+          name: "green dau",
           price: 0,
           url: "https://i.imgur.com/xfcIq0Q.png", // URL removed - add back later
           allowed: ["dom"],
@@ -1204,90 +1207,66 @@
       }
 
       function viewProfile(username) {
-        tab("profile");
-        document.getElementById("display-username").innerText = username;
-        document.getElementById("pfp-edit-btn").style.display =
-          username === window.myName ? "block" : "none";
-        document.getElementById("pending-requests-section").style.display =
-          username === window.myName ? "block" : "none";
-        function viewProfile(name) {
-          const audio = document.getElementById("profile-music");
+  tab("profile");
+  document.getElementById("display-username").innerText = username;
+  document.getElementById("pfp-edit-btn").style.display =
+    username === window.myName ? "block" : "none";
+  document.getElementById("pending-requests-section").style.display =
+    username === window.myName ? "block" : "none";
 
-          // Check if the profile being viewed is "dom"
-          if (name === "dom") {
-            // Replace 'your_file_name.mp3' with the exact name of the file in your repo
-            audio.src = "Greenday_-_American_Idiot_(mp3.pm).mp3";
-            audio
-              .play()
-              .catch((e) =>
-                console.log("Autoplay blocked: Interaction required.")
-              );
-          } else {
-            audio.pause();
-            audio.src = "";
-          }
+  // Handle audio for dom's profile
+  const audio = document.getElementById("profile-audio");
+  console.log("Viewing profile:", username); // Debug log
+  
+  if (username === "dom") {
+    console.log("Attempting to play audio for dom"); // Debug log
+    audio.currentTime = 0;
+    audio.play()
+      .then(() => console.log("Audio playing successfully"))
+      .catch(e => console.error("Audio play failed:", e));
+  } else {
+    audio.pause();
+    audio.currentTime = 0;
+  }
 
-          // --- Keep your existing profile UI logic below ---
-          tab("profile");
-          const isMe = name === window.myName;
-          document.getElementById("pfp-edit-btn").style.display = isMe
-            ? "block"
-            : "none";
-          document.getElementById("pending-requests-section").style.display =
-            isMe ? "block" : "none";
+  db.ref("users/" + username).on("value", (snap) => {
+    const data = snap.val();
+    if (data) {
+      document.getElementById("display-pfp").src =
+        data.pfp || "https://via.placeholder.com/140?text=VOID";
+      document.getElementById("profile-bg-layer").style.background =
+        data.active_bg ? `url('${data.active_bg}')` : "#000";
+      const isOnline = data.status === "online";
+      document.getElementById("status-dot").className = `dot ${
+        isOnline ? "online" : "offline"
+      }`;
+      document.getElementById("status-text").innerText = isOnline
+        ? "ONLINE"
+        : "OFFLINE";
+      document.getElementById("status-text").style.color = isOnline
+        ? "var(--online)"
+        : "var(--offline)";
+    }
+  });
+}
 
-          db.ref("users/" + name).once("value", (snap) => {
-            const data = snap.val();
-            if (!data) return;
-            document.getElementById("display-username").innerText = name;
-            document.getElementById("display-pfp").src =
-              data.pfp || "https://via.placeholder.com/140";
-            document.getElementById("status-text").innerText =
-              data.status.toUpperCase();
-            document.getElementById("status-dot").className =
-              "dot " + data.status;
-
-            // Apply background if equipped
-            const bgLayer = document.getElementById("profile-bg-layer");
-            if (data.equipped_bg) {
-              const item = SHOP_ITEMS.find((i) => i.id === data.equipped_bg);
-              bgLayer.style.background = item ? `url(${item.url})` : "none";
-            } else {
-              bgLayer.style.background = "none";
-            }
-          });
-        }
-
-        db.ref("users/" + username).on("value", (snap) => {
-          const data = snap.val();
-          if (data) {
-            document.getElementById("display-pfp").src =
-              data.pfp || "https://via.placeholder.com/140?text=VOID";
-            document.getElementById("profile-bg-layer").style.background =
-              data.active_bg ? `url('${data.active_bg}')` : "#000";
-            const isOnline = data.status === "online";
-            document.getElementById("status-dot").className = `dot ${
-              isOnline ? "online" : "offline"
-            }`;
-            document.getElementById("status-text").innerText = isOnline
-              ? "ONLINE"
-              : "OFFLINE";
-            document.getElementById("status-text").style.color = isOnline
-              ? "var(--online)"
-              : "var(--offline)";
-          }
-        });
-      }
-
-      function tab(id) {
-        document
-          .querySelectorAll(".view, .nav-item")
-          .forEach((v) => v.classList.remove("active"));
-        document.getElementById(id).classList.add("active");
-        if (id === "water")
-          document.getElementById("water-frame").src =
-            "https://cgxlyxnlynjpbmdiywnrc3rhcnrtewvkdwnhdglvbml0d2fzc29zawdtv2.familyguy.in/signin.html";
-      }
+function tab(id) {
+  document
+    .querySelectorAll(".view, .nav-item")
+    .forEach((v) => v.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  
+  // Stop audio when switching away from profile
+  if (id !== "profile") {
+    const audio = document.getElementById("profile-audio");
+    audio.pause();
+    audio.currentTime = 0;
+  }
+  
+  if (id === "water")
+    document.getElementById("water-frame").src =
+      "https://cgxlyxnlynjpbmdiywnrc3rhcnrtewvkdwnhdglvbml0d2fzc29zawdtv2.familyguy.in/signin.html";
+}
 
       function toggleWaterChat() {
         const sidebar = document.getElementById("water-sidebar");
@@ -1379,100 +1358,6 @@
         localStorage.setItem("nexus_user", targetAccount);
         window.myName = targetAccount;
         location.reload();
-      }
-      function viewProfile(name) {
-        const audio = document.getElementById("profile-music");
-
-        // 1. Play logic for "dom"
-        if (name === "dom") {
-          audio.src = "Greenday_-_American_Idiot_(mp3.pm).mp3";
-          audio.play().catch((e) => {
-            console.log(
-              "Audio play blocked. Click anywhere on the page first!"
-            );
-          });
-        } else {
-          // Stop music if looking at anyone else
-          audio.pause();
-          audio.src = "";
-        }
-
-        // 2. Standard UI logic to show the profile
-        tab("profile");
-        const isMe = name === window.myName;
-        document.getElementById("pfp-edit-btn").style.display = isMe
-          ? "block"
-          : "none";
-        document.getElementById("pending-requests-section").style.display = isMe
-          ? "block"
-          : "none";
-
-        db.ref("users/" + name).once("value", (snap) => {
-          const data = snap.val();
-          if (!data) return;
-          document.getElementById("display-username").innerText = name;
-          document.getElementById("display-pfp").src =
-            data.pfp || "https://via.placeholder.com/140";
-          document.getElementById("status-text").innerText = (
-            data.status || "offline"
-          ).toUpperCase();
-          document.getElementById("status-dot").className =
-            "dot " + (data.status || "offline");
-
-          // Background logic
-          const bgLayer = document.getElementById("profile-bg-layer");
-          if (data.equipped_bg) {
-            const item = SHOP_ITEMS.find((i) => i.id === data.equipped_bg);
-            bgLayer.style.background = item ? `url(${item.url})` : "none";
-          } else {
-            bgLayer.style.background = "none";
-          }
-        });
-      }
-      // THIS IS THE TAB FUNCTION THAT HANDLES NAVIGATION
-      function tab(name) {
-        // --- STOP MUSIC LOGIC ---
-        // If we go to any tab that is NOT the profile, stop the music
-        const audio = document.getElementById("profile-music");
-        if (audio && name !== "profile") {
-          audio.pause();
-          audio.currentTime = 0; // Resets the song to the start
-        }
-
-        // --- NAVIGATION LOGIC ---
-        // Hide all views
-        document
-          .querySelectorAll(".view")
-          .forEach((v) => v.classList.remove("active"));
-        // Remove "active" glow from all nav items
-        document
-          .querySelectorAll(".nav-item")
-          .forEach((i) => i.classList.remove("active"));
-
-        // Show the view we clicked on
-        const targetView = document.getElementById(name);
-        if (targetView) {
-          targetView.classList.add("active");
-        }
-
-        // Make the clicked nav item glow
-        // This looks for the nav item that has the matching 'tab' call in its onclick
-        document.querySelectorAll(".nav-item").forEach((item) => {
-          if (
-            item.getAttribute("onclick") &&
-            item.getAttribute("onclick").includes(`'${name}'`)
-          ) {
-            item.classList.add("active");
-          }
-        });
-
-        // Special logic for the Water tab (updates the iframe)
-        if (name === "water") {
-          const frame = document.getElementById("water-frame");
-          if (frame && !frame.src) {
-            frame.src = "https://water.fm"; // Or whatever your water link is
-          }
-        }
       }
     </script>
   </body>
