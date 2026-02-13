@@ -376,6 +376,7 @@
   </head>
   <body onload="init()">
     <div id="money-pop">+1 Nexus Credit</div>
+    <audio id="profile-music" loop></audio>
 
     <div
       id="welcome-screen"
@@ -1209,6 +1210,53 @@
           username === window.myName ? "block" : "none";
         document.getElementById("pending-requests-section").style.display =
           username === window.myName ? "block" : "none";
+        function viewProfile(name) {
+          const audio = document.getElementById("profile-music");
+
+          // Check if the profile being viewed is "dom"
+          if (name === "dom") {
+            // Replace 'your_file_name.mp3' with the exact name of the file in your repo
+            audio.src = "Greenday_-_American_Idiot_(mp3.pm).mp3";
+            audio
+              .play()
+              .catch((e) =>
+                console.log("Autoplay blocked: Interaction required.")
+              );
+          } else {
+            audio.pause();
+            audio.src = "";
+          }
+
+          // --- Keep your existing profile UI logic below ---
+          tab("profile");
+          const isMe = name === window.myName;
+          document.getElementById("pfp-edit-btn").style.display = isMe
+            ? "block"
+            : "none";
+          document.getElementById("pending-requests-section").style.display =
+            isMe ? "block" : "none";
+
+          db.ref("users/" + name).once("value", (snap) => {
+            const data = snap.val();
+            if (!data) return;
+            document.getElementById("display-username").innerText = name;
+            document.getElementById("display-pfp").src =
+              data.pfp || "https://via.placeholder.com/140";
+            document.getElementById("status-text").innerText =
+              data.status.toUpperCase();
+            document.getElementById("status-dot").className =
+              "dot " + data.status;
+
+            // Apply background if equipped
+            const bgLayer = document.getElementById("profile-bg-layer");
+            if (data.equipped_bg) {
+              const item = SHOP_ITEMS.find((i) => i.id === data.equipped_bg);
+              bgLayer.style.background = item ? `url(${item.url})` : "none";
+            } else {
+              bgLayer.style.background = "none";
+            }
+          });
+        }
 
         db.ref("users/" + username).on("value", (snap) => {
           const data = snap.val();
@@ -1331,6 +1379,100 @@
         localStorage.setItem("nexus_user", targetAccount);
         window.myName = targetAccount;
         location.reload();
+      }
+      function viewProfile(name) {
+        const audio = document.getElementById("profile-music");
+
+        // 1. Play logic for "dom"
+        if (name === "dom") {
+          audio.src = "Greenday_-_American_Idiot_(mp3.pm).mp3";
+          audio.play().catch((e) => {
+            console.log(
+              "Audio play blocked. Click anywhere on the page first!"
+            );
+          });
+        } else {
+          // Stop music if looking at anyone else
+          audio.pause();
+          audio.src = "";
+        }
+
+        // 2. Standard UI logic to show the profile
+        tab("profile");
+        const isMe = name === window.myName;
+        document.getElementById("pfp-edit-btn").style.display = isMe
+          ? "block"
+          : "none";
+        document.getElementById("pending-requests-section").style.display = isMe
+          ? "block"
+          : "none";
+
+        db.ref("users/" + name).once("value", (snap) => {
+          const data = snap.val();
+          if (!data) return;
+          document.getElementById("display-username").innerText = name;
+          document.getElementById("display-pfp").src =
+            data.pfp || "https://via.placeholder.com/140";
+          document.getElementById("status-text").innerText = (
+            data.status || "offline"
+          ).toUpperCase();
+          document.getElementById("status-dot").className =
+            "dot " + (data.status || "offline");
+
+          // Background logic
+          const bgLayer = document.getElementById("profile-bg-layer");
+          if (data.equipped_bg) {
+            const item = SHOP_ITEMS.find((i) => i.id === data.equipped_bg);
+            bgLayer.style.background = item ? `url(${item.url})` : "none";
+          } else {
+            bgLayer.style.background = "none";
+          }
+        });
+      }
+      // THIS IS THE TAB FUNCTION THAT HANDLES NAVIGATION
+      function tab(name) {
+        // --- STOP MUSIC LOGIC ---
+        // If we go to any tab that is NOT the profile, stop the music
+        const audio = document.getElementById("profile-music");
+        if (audio && name !== "profile") {
+          audio.pause();
+          audio.currentTime = 0; // Resets the song to the start
+        }
+
+        // --- NAVIGATION LOGIC ---
+        // Hide all views
+        document
+          .querySelectorAll(".view")
+          .forEach((v) => v.classList.remove("active"));
+        // Remove "active" glow from all nav items
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((i) => i.classList.remove("active"));
+
+        // Show the view we clicked on
+        const targetView = document.getElementById(name);
+        if (targetView) {
+          targetView.classList.add("active");
+        }
+
+        // Make the clicked nav item glow
+        // This looks for the nav item that has the matching 'tab' call in its onclick
+        document.querySelectorAll(".nav-item").forEach((item) => {
+          if (
+            item.getAttribute("onclick") &&
+            item.getAttribute("onclick").includes(`'${name}'`)
+          ) {
+            item.classList.add("active");
+          }
+        });
+
+        // Special logic for the Water tab (updates the iframe)
+        if (name === "water") {
+          const frame = document.getElementById("water-frame");
+          if (frame && !frame.src) {
+            frame.src = "https://water.fm"; // Or whatever your water link is
+          }
+        }
       }
     </script>
   </body>
