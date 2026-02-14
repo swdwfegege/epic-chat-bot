@@ -936,6 +936,7 @@
       let groupInviteCount = 0;
       let messageNotifTimeout = null;
       let messageListenersAttached = {};
+      let messageListenersInitialLoad = {};
 
       const SHOP_ITEMS = [
         {
@@ -1199,10 +1200,14 @@
         const attach = (chatId) => {
           if (messageListenersAttached[chatId]) return;
           messageListenersAttached[chatId] = true;
+          messageListenersInitialLoad[chatId] = true;
           db.ref("messages/" + chatId).limitToLast(1).on("child_added", (snap) => {
             const d = snap.val();
             if (!d || d.sender === window.myName) return;
-            if (Date.now() - (d.timestamp || 0) > 3000) return;
+            if (messageListenersInitialLoad[chatId]) {
+              messageListenersInitialLoad[chatId] = false;
+              return;
+            }
             if (getCurrentChatId() === chatId) return;
             if (getMutedChats()[chatId]) return;
             unreadChats[chatId] = true;
@@ -1216,17 +1221,18 @@
         attach("GLOBAL_CHAT");
         const refresh = () => {
           db.ref("users/" + window.myName + "/friends").once("value", (fSnap) => {
-            fSnap.forEach((f) => attach([window.myName, f.key].sort().join("_")));
+            if (fSnap.exists()) fSnap.forEach((f) => attach([window.myName, f.key].sort().join("_")));
           });
           db.ref("groups").once("value", (gSnap) => {
             gSnap.forEach((g) => {
-              if (g.val().members && g.val().members[window.myName]) attach(g.key);
+              const data = g.val();
+              if (data && data.members && data.members[window.myName]) attach(g.key);
             });
           });
         };
         refresh();
-        db.ref("users/" + window.myName + "/friends").on("value", () => { setTimeout(refresh, 100); });
-        db.ref("groups").on("value", () => setTimeout(refresh, 100));
+        db.ref("users/" + window.myName + "/friends").on("value", () => { setTimeout(refresh, 200); });
+        db.ref("groups").on("value", () => setTimeout(refresh, 200));
       }
       function updateUnreadUI() {
         const items = document.querySelectorAll(".contact-item[data-chat-id]");
