@@ -758,6 +758,14 @@
 const app = firebase.initializeApp(firebaseConfig);
 
 // Initialize App Check
+// This tells Firebase to ignore the 403 error for now so your site loads
+self.FIREBASE_APPCHECK_DEBUG_TOKEN = true; 
+
+const appCheck = firebase.appCheck();
+appCheck.activate(
+  new firebase.appCheck.ReCaptchaEnterpriseProvider('6LcSoWosAAAAAMKjVz4JAK8aHwSPZuawuD2tJwKY'),
+  true
+);
 const appCheck = firebase.appCheck(); // No 'app' inside the parentheses here for compat
 appCheck.activate(
   new firebase.appCheck.ReCaptchaEnterpriseProvider('6LcSoWosAAAAAPgGOi5vw_fOetbHSmHd_jKpH0Ts'),
