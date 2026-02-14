@@ -99,6 +99,19 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         background-size: cover !important;
         background-position: center !important;
+        position: relative;
+      }
+      .limited-badge {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        background: rgba(255, 68, 68, 0.9);
+        color: white;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 4px 8px;
+        border-radius: 4px;
+        letter-spacing: 1px;
       }
       .nexus-input {
         width: 100%;
@@ -196,6 +209,27 @@
         font-weight: bold;
         box-shadow: 0 0 10px var(--alert);
       }
+      .contact-item.unread {
+        border-left: 3px solid var(--alert);
+        background: rgba(255, 68, 68, 0.15);
+      }
+      #message-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        background: rgba(0, 0, 0, 0.9);
+        border: 1px solid var(--accent);
+        color: white;
+        font-size: 14px;
+        border-radius: 8px;
+        z-index: 10000;
+        display: none;
+        box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+      }
+      #message-notification.show {
+        display: block;
+      }
 
       .view {
         display: none;
@@ -281,6 +315,13 @@
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid var(--border);
         backdrop-filter: blur(5px);
+      }
+      .msg.system {
+        align-self: center;
+        background: rgba(0, 242, 255, 0.15);
+        border: 1px solid var(--accent);
+        font-size: 12px;
+        opacity: 0.9;
       }
 
       .chat-pfp-trigger {
@@ -377,6 +418,29 @@
         margin-top: 10px;
         min-height: 15px;
       }
+
+      #global-notification {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        max-width: 350px;
+        padding: 15px 20px;
+        background: rgba(0, 0, 0, 0.9);
+        border: 1px solid var(--accent);
+        border-radius: 8px;
+        color: white;
+        font-size: 14px;
+        z-index: 10000;
+        box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+        transform: translateX(-120%);
+        transition: transform 0.4s ease-out;
+      }
+      #global-notification.show {
+        transform: translateX(0);
+      }
+      #global-notification.hide {
+        transform: translateX(-120%);
+      }
     </style>
   </head>
   <body onload="init()">
@@ -386,6 +450,8 @@
       <source src="Greenday_-_American_Idiot_(mp3.pm).mp3" type="audio/mpeg">
     </audio>
     <div id="money-pop">+1 Nexus Credit</div>
+    <div id="global-notification"></div>
+    <div id="message-notification">you have a message</div>
     <div
       id="welcome-screen"
       style="
@@ -437,10 +503,11 @@
     <div id="hub">
       <nav class="navbar">
         <div class="nav-item" onclick="tab('water')">water</div>
-        <div id="nav-chat" class="nav-item active" onclick="tab('chat')">
-          chat
+        <div id="nav-chat" class="nav-item active" onclick="tab('chat')" style="position: relative;">
+          chat <span id="chat-badge" class="badge">!</span>
         </div>
         <div class="nav-item" onclick="tab('shop')">shop</div>
+        <div id="nav-admin" class="nav-item" onclick="tab('admin')" style="display: none;">admin</div>
         <div class="nav-item" onclick="viewProfile(window.myName)">
           my profile <span id="notif-badge" class="badge">!</span>
         </div>
@@ -507,6 +574,7 @@
             <div id="chatroom-list">
               <div
                 class="contact-item"
+                data-chat-id="GLOBAL_CHAT"
                 onclick="openChat('Live Chatroom', this, 'global')"
               >
                 <div
@@ -625,6 +693,14 @@
               >
                 Manage
               </button>
+              <button
+                id="mute-notif-btn"
+                class="nexus-btn"
+                style="width: auto; font-size: 10px; margin-right: 5px; display: none;"
+                onclick="toggleMuteNotifications()"
+                title="Mute notifications for this chat"
+              >
+              </button>
               <div
                 onclick="changeChatBG()"
                 style="cursor: pointer; opacity: 0.5; font-size: 18px"
@@ -665,6 +741,77 @@
           Balance: <span id="shop-balance">0</span> NC
         </div>
         <div class="shop-grid" id="shop-items-container"></div>
+      </div>
+
+      <div id="admin" class="view" style="flex-direction: column; align-items: center; padding: 40px; overflow-y: auto;">
+        <h2 style="letter-spacing: 2px; margin-bottom: 20px;">ban someone</h2>
+        <input
+          type="text"
+          id="ban-username-input"
+          class="nexus-input"
+          style="max-width: 300px; margin-bottom: 15px;"
+          placeholder="Enter username to ban"
+          onkeydown="if(event.key==='Enter') banUser()"
+        />
+        <button class="nexus-btn" onclick="banUser()" style="width: auto; padding: 10px 25px;">Ban</button>
+        <div id="ban-feedback" style="margin-top: 15px; font-size: 12px; color: var(--accent); min-height: 20px;"></div>
+
+        <h2 style="letter-spacing: 2px; margin: 40px 0 20px;">global message</h2>
+        <input
+          type="text"
+          id="global-message-input"
+          class="nexus-input"
+          style="max-width: 300px; margin-bottom: 15px;"
+          placeholder="Send a global notification"
+          onkeydown="if(event.key==='Enter') sendGlobalMessage()"
+        />
+
+        <h2 style="letter-spacing: 2px; margin: 40px 0 20px;">limited skins</h2>
+        <input
+          type="text"
+          id="limited-name-input"
+          class="nexus-input"
+          style="max-width: 300px; margin-bottom: 10px;"
+          placeholder="Background name"
+        />
+        <input
+          type="file"
+          id="limited-image-input"
+          accept="image/*"
+          style="display: none;"
+          onchange="handleLimitedImage(this)"
+        />
+        <button class="nexus-btn" onclick="document.getElementById('limited-image-input').click()" style="width: auto; padding: 10px 20px; margin-bottom: 10px;">
+          Choose background image
+        </button>
+        <div id="limited-image-preview" style="max-width: 150px; max-height: 80px; margin-bottom: 10px; border-radius: 4px; overflow: hidden; display: none;">
+          <img id="limited-preview-img" style="width: 100%; height: auto; display: block;" />
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+          <input
+            type="number"
+            id="limited-duration-input"
+            class="nexus-input"
+            style="max-width: 100px; margin-bottom: 0;"
+            placeholder="Duration"
+            min="1"
+          />
+          <select id="limited-duration-unit" class="nexus-input" style="max-width: 100px; margin-bottom: 0;">
+            <option value="minutes">minutes</option>
+            <option value="hours">hours</option>
+          </select>
+        </div>
+        <input
+          type="number"
+          id="limited-price-input"
+          class="nexus-input"
+          style="max-width: 120px; margin-bottom: 10px;"
+          placeholder="Price (NC)"
+          min="0"
+          value="0"
+        />
+        <button class="nexus-btn" onclick="submitLimitedSkin()" style="width: auto; padding: 10px 25px;">Add to shop</button>
+        <div id="limited-feedback" style="margin-top: 10px; font-size: 12px; color: var(--accent); min-height: 20px;"></div>
       </div>
 
       <div id="profile" class="view">
@@ -723,6 +870,27 @@
               </div>
               <div id="requests-list-container"></div>
             </div>
+            <div
+              id="group-invites-section"
+              style="
+                width: 100%;
+                margin-top: 20px;
+                border-top: 1px solid var(--border);
+                display: none;
+              "
+            >
+              <div
+                style="
+                  font-size: 10px;
+                  color: var(--accent);
+                  margin-top: 15px;
+                  letter-spacing: 1px;
+                "
+              >
+                GROUP INVITES
+              </div>
+              <div id="group-invites-container"></div>
+            </div>
             <button
               id="pfp-edit-btn"
               class="nexus-btn"
@@ -743,9 +911,6 @@
     </div>
 
     <script>
-      function isBannedSource() {
-    return window.location.href.includes("jeremyryanknight2012.github.io/Nova/#home");
-}
       const firebaseConfig = {
         apiKey: "AIzaSyDKOq326tL8Kh1hraa_R0bV0MvYMUZotfk",
         authDomain: "realtime-database-3505d.firebaseapp.com",
@@ -759,11 +924,18 @@
       firebase.initializeApp(firebaseConfig);
       const db = firebase.database();
       window.myName = null;
+      let limitedShopItems = {};
+      let limitedImageData = null;
       let activeChat = null,
         chatType = "none",
         myBalance = 0,
         myInventory = [],
         myFriends = [];
+      let unreadChats = {};
+      let friendRequestCount = 0;
+      let groupInviteCount = 0;
+      let messageNotifTimeout = null;
+      let messageListenersAttached = {};
 
       const SHOP_ITEMS = [
         {
@@ -848,40 +1020,38 @@
       ];
 
       function init() {
-  // 1. THE BAN CHECK (Happens first)
-  const blockedSource = "jeremyryanknight2012.github.io";
-  if (document.referrer.includes(blockedSource) || window.location.href.includes(blockedSource)) {
-    document.body.innerHTML = `
-      <div style="height: 100vh; display: flex; justify-content: center; align-items: center; background: #000; color: #ff4444; font-family: 'Segoe UI', sans-serif; text-align: center; flex-direction: column;">
-          <h1 style="text-shadow: 0 0 15px #ff4444;">TERMINAL ACCESS REVOKED</h1>
-          <p style="color: #555;">Unauthorized launch source detected. This origin is restricted.</p>
-      </div>
-    `;
-    return; // This stops the rest of the function from running
-  }
+        const storedUsername = localStorage.getItem("nexus_user");
+        if (storedUsername) {
+          db.ref("banned/" + storedUsername).once("value", (banSnap) => {
+            if (banSnap.val() === true) {
+              showBannedScreen();
+              return;
+            }
+            db.ref("users/" + storedUsername).once("value", (snap) => {
+              if (snap.exists()) {
+                window.myName = storedUsername;
+                showHub();
+              } else {
+                localStorage.removeItem("nexus_user");
+                window.myName = null;
+                runWelcome();
+              }
+              if (window.myName === "j") {
+                document.getElementById("switch-dom-tab").style.display = "block";
+              }
+              if (window.myName === "dom") {
+                document.getElementById("nav-admin").style.display = "block";
+              }
+            });
+          });
+        } else {
+          runWelcome();
+        }
+      }
 
-  // 2. YOUR ORIGINAL LOGIC (Runs if not banned)
-  const storedUsername = localStorage.getItem("nexus_user");
-  if (storedUsername) {
-    db.ref("users/" + storedUsername).once("value", (snap) => {
-      if (snap.exists()) {
-        window.myName = storedUsername;
-        showHub();
-      } else {
-        localStorage.removeItem("nexus_user");
-        window.myName = null;
-        runWelcome();
+      function showBannedScreen() {
+        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;width:100vw;background:#000;color:#ff4444;font-size:48px;font-weight:bold;text-align:center;font-family:\'Segoe UI\',sans-serif;">get banned lmao</div>';
       }
-      
-      // Admin check for "j"
-      if (window.myName === "j") {
-        document.getElementById("switch-dom-tab").style.display = "block";
-      }
-    });
-  } else {
-    runWelcome();
-  }
-}
 
       function runWelcome() {
         const text = "Welcome. Let's get you set up.";
@@ -985,6 +1155,218 @@
         listenFriends();
         listenGroups();
         listenRequests();
+        listenGroupInvites();
+        listenGlobalMessage();
+        listenLimitedShopItems();
+        setupMessageListeners();
+      }
+
+      function getMutedChats() {
+        try {
+          const s = localStorage.getItem("nexus_muted_" + window.myName);
+          return s ? JSON.parse(s) : {};
+        } catch (e) { return {}; }
+      }
+      function saveMutedChats(m) {
+        localStorage.setItem("nexus_muted_" + window.myName, JSON.stringify(m));
+      }
+      function toggleMuteNotifications() {
+        const cid = getCurrentChatId();
+        if (!cid) return;
+        const m = getMutedChats();
+        m[cid] = !m[cid];
+        saveMutedChats(m);
+        updateMuteButton();
+      }
+      function getCurrentChatId() {
+        if (chatType === "global") return "GLOBAL_CHAT";
+        if (chatType === "group") return activeChat;
+        if (chatType === "private" && activeChat) return [window.myName, activeChat].sort().join("_");
+        return null;
+      }
+      function updateMuteButton() {
+        const btn = document.getElementById("mute-notif-btn");
+        if (!btn) return;
+        const cid = getCurrentChatId();
+        if (!cid || chatType === "none") { btn.style.display = "none"; return; }
+        btn.style.display = "block";
+        const m = getMutedChats();
+        const muted = m[cid];
+        const labels = { global: "chatroom", group: "group", private: "contact" };
+        btn.innerText = muted ? "unmute notifications for this " + (labels[chatType] || "chat") : "mute notifications for this " + (labels[chatType] || "chat");
+      }
+      function setupMessageListeners() {
+        const attach = (chatId) => {
+          if (messageListenersAttached[chatId]) return;
+          messageListenersAttached[chatId] = true;
+          db.ref("messages/" + chatId).limitToLast(1).on("child_added", (snap) => {
+            const d = snap.val();
+            if (!d || d.sender === window.myName) return;
+            if (Date.now() - (d.timestamp || 0) > 3000) return;
+            if (getCurrentChatId() === chatId) return;
+            if (getMutedChats()[chatId]) return;
+            unreadChats[chatId] = true;
+            updateUnreadUI();
+            const notif = document.getElementById("message-notification");
+            if (notif) { notif.classList.add("show"); }
+            clearTimeout(messageNotifTimeout);
+            messageNotifTimeout = setTimeout(() => { if (notif) notif.classList.remove("show"); }, 5000);
+          });
+        };
+        attach("GLOBAL_CHAT");
+        const refresh = () => {
+          db.ref("users/" + window.myName + "/friends").once("value", (fSnap) => {
+            fSnap.forEach((f) => attach([window.myName, f.key].sort().join("_")));
+          });
+          db.ref("groups").once("value", (gSnap) => {
+            gSnap.forEach((g) => {
+              if (g.val().members && g.val().members[window.myName]) attach(g.key);
+            });
+          });
+        };
+        refresh();
+        db.ref("users/" + window.myName + "/friends").on("value", () => { setTimeout(refresh, 100); });
+        db.ref("groups").on("value", () => setTimeout(refresh, 100));
+      }
+      function updateUnreadUI() {
+        const items = document.querySelectorAll(".contact-item[data-chat-id]");
+        items.forEach((el) => {
+          const cid = el.dataset.chatId;
+          el.classList.toggle("unread", !!unreadChats[cid]);
+        });
+        const chatBadge = document.getElementById("chat-badge");
+        const unreadCount = Object.keys(unreadChats).filter((k) => unreadChats[k]).length;
+        if (chatBadge) chatBadge.style.display = unreadCount > 0 ? "block" : "none";
+      }
+
+      function listenGroupInvites() {
+        db.ref("groupInvites/" + window.myName).on("value", (snap) => {
+          const container = document.getElementById("group-invites-container");
+          container.innerHTML = "";
+          groupInviteCount = 0;
+          snap.forEach((inv) => {
+            const data = inv.val();
+            if (!data) return;
+            groupInviteCount++;
+            const div = document.createElement("div");
+            div.className = "request-item";
+            div.innerHTML = `
+              <span>${data.from} invited you to "${data.groupName}"</span>
+              <button class="nexus-btn" style="width:auto; padding:2px 10px;" onclick="acceptGroupInvite('${inv.key}')">Accept</button>
+            `;
+            container.appendChild(div);
+          });
+          updateProfileBadge();
+        });
+      }
+
+      function acceptGroupInvite(groupId) {
+        db.ref("groups/" + groupId).once("value", (snap) => {
+          const data = snap.val();
+          if (!data) return;
+          db.ref("groups/" + groupId + "/members/" + window.myName).set(true);
+          db.ref("groupInvites/" + window.myName + "/" + groupId).remove();
+          db.ref("messages/" + groupId).push({
+            sender: "_system",
+            text: window.myName + " has joined " + data.name,
+            timestamp: Date.now(),
+            seen: { [window.myName]: true },
+          });
+          tab("chat");
+          setTimeout(() => {
+            const el = document.querySelector("#group-list .contact-item[data-group-id=\"" + groupId + "\"]");
+            openChat(groupId, el || null, "group");
+          }, 200);
+        });
+      }
+
+      function handleLimitedImage(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          limitedImageData = e.target.result;
+          document.getElementById("limited-preview-img").src = limitedImageData;
+          document.getElementById("limited-image-preview").style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function submitLimitedSkin() {
+        if (window.myName !== "dom") return;
+        const name = document.getElementById("limited-name-input").value.trim();
+        const duration = parseInt(document.getElementById("limited-duration-input").value, 10);
+        const unit = document.getElementById("limited-duration-unit").value;
+        const price = parseInt(document.getElementById("limited-price-input").value, 10) || 0;
+        const feedback = document.getElementById("limited-feedback");
+        if (!name) { feedback.innerText = "Enter a name"; return; }
+        if (!limitedImageData) { feedback.innerText = "Choose an image"; return; }
+        if (!duration || duration < 1) { feedback.innerText = "Enter valid duration"; return; }
+        const durationMs = unit === "hours" ? duration * 60 * 60 * 1000 : duration * 60 * 1000;
+        const id = "limited_" + Date.now();
+        const item = { id, name, url: limitedImageData, price, durationMs, createdAt: Date.now() };
+        db.ref("limitedShopItems/" + id).set(item).then(() => {
+          feedback.innerText = "Added to shop!";
+          document.getElementById("limited-name-input").value = "";
+          document.getElementById("limited-duration-input").value = "";
+          document.getElementById("limited-price-input").value = "0";
+          limitedImageData = null;
+          document.getElementById("limited-image-preview").style.display = "none";
+          document.getElementById("limited-image-input").value = "";
+        }).catch(() => { feedback.innerText = "Failed."; });
+      }
+
+      function listenLimitedShopItems() {
+        db.ref("limitedShopItems").on("value", (snap) => {
+          limitedShopItems = snap.val() || {};
+          renderShop();
+        });
+        if (!window._limitedShopInterval) {
+          window._limitedShopInterval = setInterval(() => {
+            if (Object.keys(limitedShopItems).length > 0) renderShop();
+          }, 60000);
+        }
+      }
+
+      function formatRemainingTime(ms) {
+        if (ms <= 0) return "EXPIRED";
+        const mins = Math.floor(ms / 60000);
+        const hours = Math.floor(ms / 3600000);
+        if (hours >= 1) return hours + " HOUR" + (hours > 1 ? "S" : "");
+        return mins + " MINUTE" + (mins > 1 ? "S" : "");
+      }
+
+      function sendGlobalMessage() {
+        if (window.myName !== "dom") return;
+        const msg = document.getElementById("global-message-input").value.trim();
+        if (!msg) return;
+        db.ref("globalMessage").set({
+          text: msg,
+          timestamp: Date.now()
+        });
+        document.getElementById("global-message-input").value = "";
+      }
+
+      function listenGlobalMessage() {
+        db.ref("globalMessage").on("value", (snap) => {
+          const d = snap.val();
+          if (d && d.text && Date.now() - (d.timestamp || 0) < 15000) {
+            showGlobalNotification(d.text);
+          }
+        });
+      }
+
+      let globalNotifTimeout;
+      function showGlobalNotification(text) {
+        const el = document.getElementById("global-notification");
+        el.innerText = "dom says: " + text;
+        el.classList.remove("hide");
+        el.classList.add("show");
+        clearTimeout(globalNotifTimeout);
+        globalNotifTimeout = setTimeout(() => {
+          el.classList.remove("show");
+          el.classList.add("hide");
+        }, 10000);
       }
 
       function listenFriends() {
@@ -997,6 +1379,7 @@
             myFriends.push(fName);
             const div = document.createElement("div");
             div.className = "contact-item";
+            div.dataset.chatId = [window.myName, fName].sort().join("_");
             div.innerHTML = `
             <img id="sidebar-pfp-${fName}" class="avatar-circle" src="https://via.placeholder.com/34">
             <span style="flex:1">${fName}</span>
@@ -1027,20 +1410,25 @@
         }
       }
 
+      function updateProfileBadge() {
+        const badge = document.getElementById("notif-badge");
+        const total = friendRequestCount + groupInviteCount;
+        badge.style.display = total > 0 ? "block" : "none";
+      }
+
       function listenRequests() {
         db.ref("requests/" + window.myName).on("value", (snap) => {
           const container = document.getElementById("requests-list-container");
-          const badge = document.getElementById("notif-badge");
           container.innerHTML = "";
-          let count = 0;
+          friendRequestCount = 0;
           snap.forEach((r) => {
-            count++;
+            friendRequestCount++;
             const div = document.createElement("div");
             div.className = "request-item";
             div.innerHTML = `<span>${r.key}</span> <button class="nexus-btn" style="width:auto; padding:2px 10px;" onclick="acceptFriend('${r.key}')">Accept</button>`;
             container.appendChild(div);
           });
-          badge.style.display = count > 0 ? "block" : "none";
+          updateProfileBadge();
         });
       }
 
@@ -1113,6 +1501,10 @@
 
         markMessagesSeen(chatIdFinal);
 
+        delete unreadChats[chatIdFinal];
+        updateUnreadUI();
+        updateMuteButton();
+
         msgRef.on("child_added", (snap) => {
           const d = snap.val();
           boxes.forEach((box) => {
@@ -1144,6 +1536,35 @@
         });
       }
 
+      function groupInviteAction() {
+        if (chatType !== "group" || !activeChat) return;
+        db.ref("groups/" + activeChat).once("value", (snap) => {
+          const data = snap.val();
+          if (!data) return;
+          const username = prompt("Who do you want to invite?").trim().toLowerCase();
+          if (!username) return;
+          if (username === window.myName) {
+            alert("You can't invite yourself.");
+            return;
+          }
+          if (data.members && data.members[username]) {
+            alert("That user is already in the group.");
+            return;
+          }
+          db.ref("users/" + username).once("value", (uSnap) => {
+            if (!uSnap.exists()) {
+              alert("User not found.");
+              return;
+            }
+            db.ref("groupInvites/" + username + "/" + activeChat).set({
+              from: window.myName,
+              groupName: data.name,
+            });
+            alert("Invite sent to " + username + ".");
+          });
+        });
+      }
+
       function createGroup() {
         const gn = prompt("Enter Group Name:");
         if (!gn) return;
@@ -1164,7 +1585,9 @@
             const data = g.val();
             if (data.members && data.members[window.myName]) {
               const div = document.createElement("div");
-              div.className = "contact-item";
+            div.className = "contact-item";
+            div.dataset.groupId = g.key;
+            div.dataset.chatId = g.key;
               div.innerHTML = `
             <div class="avatar-circle" style="background:#222; text-align:center; line-height:34px;">G</div>
             <span style="flex:1">${data.name}</span>
@@ -1187,30 +1610,41 @@
       function renderShop() {
         const container = document.getElementById("shop-items-container");
         container.innerHTML = "";
+        const now = Date.now();
         SHOP_ITEMS.forEach((item) => {
           if (item.allowed && !item.allowed.includes(window.myName)) return;
           const isOwned = myInventory.includes(item.id);
           container.innerHTML += `
             <div class="shop-item ${isOwned ? "owned" : ""}">
-              <div class="bg-preview" style="background: url('${
-                item.url
-              }');"></div>
-              <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">${
-                item.name
-              }</div>
-              <div style="font-size:12px; opacity:0.7; margin-bottom:10px;">${
-                item.price
-              } NC</div>
-              <button class="nexus-btn ${
-                isOwned ? "equip-btn" : ""
-              }" onclick="${
-            isOwned
-              ? `equip('${item.url}')`
-              : `buy('${item.id}', ${item.price})`
-          }" ${!isOwned && myBalance < item.price ? "disabled" : ""}>
+              <div class="bg-preview" style="background: url('${item.url}');"></div>
+              <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">${item.name}</div>
+              <div style="font-size:12px; opacity:0.7; margin-bottom:10px;">${item.price} NC</div>
+              <button class="nexus-btn ${isOwned ? "equip-btn" : ""}" onclick="${isOwned ? `equip('${item.url.replace(/'/g, "\\'")}')` : `buy('${item.id}', ${item.price})`}" ${!isOwned && myBalance < item.price ? "disabled" : ""}>
                 ${isOwned ? "Equip" : "Purchase"}
               </button>
             </div>`;
+        });
+        Object.keys(limitedShopItems).forEach((key) => {
+          const item = limitedShopItems[key];
+          const expiresAt = item.createdAt + item.durationMs;
+          if (expiresAt <= now) return;
+          const remainingMs = expiresAt - now;
+          const timeLabel = formatRemainingTime(remainingMs);
+          const isOwned = myInventory.includes(item.id);
+          const div = document.createElement("div");
+          div.className = "shop-item" + (isOwned ? " owned" : "");
+          div.innerHTML = `
+            <div class="bg-preview" style="background: url('${(item.url || "").replace(/'/g, "%27")}');">
+              <span class="limited-badge">LIMITED ${timeLabel}</span>
+            </div>
+            <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">${(item.name || "").replace(/</g, "&lt;")}</div>
+            <div style="font-size:12px; opacity:0.7; margin-bottom:10px;">${item.price} NC</div>
+            <button class="nexus-btn ${isOwned ? "equip-btn" : ""}" ${!isOwned && myBalance < item.price ? "disabled" : ""}>
+              ${isOwned ? "Equip" : "Purchase"}
+            </button>`;
+          const btn = div.querySelector("button");
+          btn.onclick = () => isOwned ? equip(item.url) : buy(item.id, item.price);
+          container.appendChild(div);
         });
       }
 
@@ -1242,6 +1676,8 @@
   document.getElementById("pfp-edit-btn").style.display =
     username === window.myName ? "block" : "none";
   document.getElementById("pending-requests-section").style.display =
+    username === window.myName ? "block" : "none";
+  document.getElementById("group-invites-section").style.display =
     username === window.myName ? "block" : "none";
 
   // Handle audio for dom's profile
@@ -1340,6 +1776,13 @@ function tab(id) {
       }
 
       function renderMessage(box, key, d) {
+        if (d.sender === "_system") {
+          const div = document.createElement("div");
+          div.className = "msg system";
+          div.innerText = d.text;
+          box.appendChild(div);
+          return;
+        }
         const isMe = d.sender === window.myName;
         const div = document.createElement("div");
         div.className = `msg ${isMe ? "user" : "other"}`;
@@ -1388,6 +1831,26 @@ function tab(id) {
         localStorage.setItem("nexus_user", targetAccount);
         window.myName = targetAccount;
         location.reload();
+      }
+
+      function banUser() {
+        if (window.myName !== "dom") return;
+        const username = document.getElementById("ban-username-input").value.trim().toLowerCase();
+        const feedback = document.getElementById("ban-feedback");
+        if (!username) {
+          feedback.innerText = "Enter a username";
+          return;
+        }
+        if (username === "dom") {
+          feedback.innerText = "You can't ban yourself";
+          return;
+        }
+        db.ref("banned/" + username).set(true).then(() => {
+          feedback.innerText = username + " has been banned.";
+          document.getElementById("ban-username-input").value = "";
+        }).catch(() => {
+          feedback.innerText = "Failed to ban.";
+        });
       }
       function logout() {
   if (confirm("Are you sure you want to log out?")) {
