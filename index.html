@@ -808,7 +808,7 @@
           id: "green_day",
           name: "green dau",
           price: 0,
-          url: "xfcIq0Q.png", // URL removed - add back later
+          url: "https://i.imgur.com/xfcIq0Q.png", // URL removed - add back later
           allowed: ["dom"],
         },
         {
@@ -844,7 +844,7 @@
               window.myName = null;
               runWelcome();
             }
-            if (window.myName === "stien") {
+            if (window.myName === "j") {
               document.getElementById("switch-dom-tab").style.display = "block";
             }
           });
@@ -937,7 +937,7 @@
         }, 60000);
 
         db.ref("users/" + window.myName + "/balance").on("value", (snap) => {
-          if (window.myName === "dom" || window.myName === "stien") {
+          if (window.myName === "dom" || window.myName === "j") {
             myBalance = 999999;
             document.getElementById("shop-balance").innerText = "∞";
           } else {
