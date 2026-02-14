@@ -231,6 +231,42 @@
         display: block;
       }
 
+      #manage-group-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10001;
+      }
+      #manage-group-modal.show {
+        display: flex;
+      }
+      .manage-group-content {
+        background: #0a0a0a;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 25px;
+        max-width: 400px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+      .manage-member-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .manage-member-item:last-child {
+        border-bottom: none;
+      }
+
       .view {
         display: none;
         flex-grow: 1;
@@ -452,6 +488,13 @@
     <div id="money-pop">+1 Nexus Credit</div>
     <div id="global-notification"></div>
     <div id="message-notification">you have a message</div>
+    <div id="manage-group-modal" onclick="if(event.target===this) closeManageGroupModal()">
+      <div class="manage-group-content" onclick="event.stopPropagation()">
+        <h3 style="margin-top: 0; letter-spacing: 2px;">manage group</h3>
+        <div id="manage-group-members"></div>
+        <button class="nexus-btn" style="margin-top: 15px; width: auto;" onclick="closeManageGroupModal()">Close</button>
+      </div>
+    </div>
     <div
       id="welcome-screen"
       style="
@@ -507,6 +550,7 @@
           chat <span id="chat-badge" class="badge">!</span>
         </div>
         <div class="nav-item" onclick="tab('shop')">shop</div>
+        <div class="nav-item" onclick="tab('inventory')">inventory</div>
         <div id="nav-admin" class="nav-item" onclick="tab('admin')" style="display: none;">admin</div>
         <div class="nav-item" onclick="viewProfile(window.myName)">
           my profile <span id="notif-badge" class="badge">!</span>
@@ -741,6 +785,16 @@
           Balance: <span id="shop-balance">0</span> NC
         </div>
         <div class="shop-grid" id="shop-items-container"></div>
+      </div>
+
+      <div
+        id="inventory"
+        class="view"
+        style="flex-direction: column; align-items: center; overflow-y: auto"
+      >
+        <h2 style="margin-top: 30px; letter-spacing: 3px">inventory</h2>
+        <p style="font-size: 12px; opacity: 0.7; margin-bottom: 20px">backgrounds you own</p>
+        <div class="shop-grid" id="inventory-items-container"></div>
       </div>
 
       <div id="admin" class="view" style="flex-direction: column; align-items: center; padding: 40px; overflow-y: auto;">
@@ -1151,6 +1205,7 @@
         db.ref("users/" + window.myName + "/inventory").on("value", (snap) => {
           myInventory = snap.val() || [];
           renderShop();
+          renderInventory();
         });
 
         listenFriends();
@@ -1326,6 +1381,7 @@
         db.ref("limitedShopItems").on("value", (snap) => {
           limitedShopItems = snap.val() || {};
           renderShop();
+          renderInventory();
         });
         if (!window._limitedShopInterval) {
           window._limitedShopInterval = setInterval(() => {
@@ -1571,6 +1627,60 @@
         });
       }
 
+      function manageGroup() {
+        if (chatType !== "group" || !activeChat) return;
+        db.ref("groups/" + activeChat).once("value", (snap) => {
+          const data = snap.val();
+          if (!data || data.owner !== window.myName) return;
+          const modal = document.getElementById("manage-group-modal");
+          const container = document.getElementById("manage-group-members");
+          container.innerHTML = "";
+          const members = data.members ? Object.keys(data.members) : [];
+          members.forEach((username) => {
+            const div = document.createElement("div");
+            div.className = "manage-member-item";
+            const isOwner = username === data.owner;
+            const safeName = (username || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            div.innerHTML = `
+              <span>${safeName} ${isOwner ? "<span style='font-size:10px;opacity:0.7'>(owner)</span>" : ""}</span>
+              <div style="display: flex; gap: 8px;">
+                ${!isOwner ? `<button class="nexus-btn kick-btn" style="width:auto; padding:4px 12px; font-size:11px;">Kick</button>` : ""}
+                ${!isOwner ? `<button class="nexus-btn promote-btn" style="width:auto; padding:4px 12px; font-size:11px; border-color: var(--online); color: var(--online);">Promote</button>` : ""}
+              </div>
+            `;
+            if (!isOwner) {
+              const kickBtn = div.querySelector(".kick-btn");
+              const promoteBtn = div.querySelector(".promote-btn");
+              if (kickBtn) kickBtn.onclick = () => kickGroupMember(activeChat, username);
+              if (promoteBtn) promoteBtn.onclick = () => promoteGroupMember(activeChat, username);
+            }
+            container.appendChild(div);
+          });
+          modal.classList.add("show");
+        });
+      }
+
+      function closeManageGroupModal() {
+        document.getElementById("manage-group-modal").classList.remove("show");
+      }
+
+      function kickGroupMember(groupId, username) {
+        if (!confirm(`Kick ${username} from the group?`)) return;
+        db.ref("groups/" + groupId + "/members/" + username).remove();
+      }
+
+      function promoteGroupMember(groupId, username) {
+        if (!confirm(`Make ${username} the group owner? You will become a regular member.`)) return;
+        db.ref("groups/" + groupId).once("value", (snap) => {
+          const data = snap.val();
+          if (!data || data.owner !== window.myName) return;
+          db.ref("groups/" + groupId).update({
+            owner: username,
+          });
+          closeManageGroupModal();
+        });
+      }
+
       function createGroup() {
         const gn = prompt("Enter Group Name:");
         if (!gn) return;
@@ -1652,6 +1762,37 @@
           btn.onclick = () => isOwned ? equip(item.url) : buy(item.id, item.price);
           container.appendChild(div);
         });
+      }
+
+      function getItemById(id) {
+        const fromShop = SHOP_ITEMS.find((i) => i.id === id);
+        if (fromShop) return fromShop;
+        const fromLimited = limitedShopItems[id];
+        if (fromLimited) return fromLimited;
+        return null;
+      }
+
+      function renderInventory() {
+        const container = document.getElementById("inventory-items-container");
+        if (!container) return;
+        container.innerHTML = "";
+        const ids = Array.isArray(myInventory) ? myInventory : [];
+        ids.forEach((id) => {
+          const item = getItemById(id);
+          if (!item || !item.url) return;
+          const div = document.createElement("div");
+          div.className = "shop-item owned";
+          div.innerHTML = `
+            <div class="bg-preview" style="background: url('${(item.url || "").replace(/'/g, "%27")}');"></div>
+            <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">${(item.name || id).replace(/</g, "&lt;")}</div>
+            <button class="nexus-btn equip-btn">Equip</button>`;
+          const btn = div.querySelector("button");
+          btn.onclick = () => equip(item.url);
+          container.appendChild(div);
+        });
+        if (ids.length === 0) {
+          container.innerHTML = '<p style="opacity: 0.6; font-size: 14px;">No backgrounds yet. Buy some in the shop!</p>';
+        }
       }
 
       function buy(id, price) {
