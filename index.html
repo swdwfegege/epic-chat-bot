@@ -6,7 +6,6 @@
     <title>Nexus Terminal</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-check-compat.js"></script>
 
     <style>
       :root {
@@ -744,46 +743,25 @@
     </div>
 
     <script>
-    // 1. Config
-// 1. Setup Config
-const firebaseConfig = {
-  apiKey: "AIzaSyDKOq326tL8Kh1hraa_R0bV0MvYMUZotfk",
-  authDomain: "realtime-database-3505d.firebaseapp.com",
-  databaseURL: "https://realtime-database-3505d-default-rtdb.firebaseio.com",
-  projectId: "realtime-database-3505d",
-  storageBucket: "realtime-database-3505d.firebasestorage.app",
-  messagingSenderId: "917293518076",
-  appId: "1:917293518076:web:1cd71d04e6a37af7afdb79"
-};
+      const firebaseConfig = {
+        apiKey: "AIzaSyDKOq326tL8Kh1hraa_R0bV0MvYMUZotfk",
+        authDomain: "realtime-database-3505d.firebaseapp.com",
+        databaseURL:
+          "https://realtime-database-3505d-default-rtdb.firebaseio.com",
+        projectId: "realtime-database-3505d",
+        storageBucket: "realtime-database-3505d.firebasestorage.app",
+        messagingSenderId: "917293518076",
+        appId: "1:917293518076:web:1cd71d04e6a37af7afdb79",
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+      window.myName = null;
+      let activeChat = null,
+        chatType = "none",
+        myBalance = 0,
+        myInventory = [],
+        myFriends = [];
 
-// 2. Initialize
-firebase.initializeApp(firebaseConfig);
-
-// 3. App Check (Careful with the parentheses here!)
-self.FIREBASE_APPCHECK_DEBUG_TOKEN = true; 
-const appCheck = firebase.appCheck();
-appCheck.activate(
-  new firebase.appCheck.ReCaptchaEnterpriseProvider('6LcSoWosAAAAAPgGOi5vw_fOetbHSmHd_jKpH0Ts'),
-  true
-);
-
-// 4. Database
-const db = firebase.database();
-
-// 5. Globals
-window.myName = null;
-let activeChat = null,
-    chatType = "none",
-    myBalance = 0,
-    myInventory = [],
-    myFriends = [];
-
-// 7. Make sure init() is actually called
-if (typeof init === "function") {
-  init();
-} else {
-  console.error("The function init() is missing from your script!");
-}
       const SHOP_ITEMS = [
         {
           id: "neon_city",
@@ -1402,18 +1380,6 @@ function tab(id) {
     });
   }
 }
-// 1. Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-
-// 2. ACTIVATE APP CHECK
-const appCheck = firebase.appCheck();
-appCheck.activate(
-  new firebase.appCheck.ReCaptchaEnterpriseProvider('6LcSoWosAAAAAMKjVz4JAK8aHwSPZuawuD2tJwK'),
-  true
-);
-
-// 3. NOW initialize database
-const database = firebase.database();
     </script>
   </body>
 </html>
