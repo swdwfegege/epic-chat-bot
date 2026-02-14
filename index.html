@@ -1122,11 +1122,20 @@
         });
       }
 
-      function sendMsg(source) {
-        const inputId = source === "water" ? "water-chat-input" : "chat-input";
-        const inp = document.getElementById(inputId);
-        if (!activeChat || !inp.value.trim()) return;
+      function sendMsg(type) {
+  const secretKey = "V3ryS3cr3tCod3_2024"; // Change this to anything you want
+  const input = document.getElementById(type === 'water' ? 'water-chat-input' : 'chat-input');
+  
+  if (!input.value.trim()) return;
 
+  db.ref("messages").push({
+    user: window.myName,
+    text: input.value,
+    token: secretKey, // We add a secret token to the message
+    timestamp: Date.now()
+  });
+  input.value = "";
+}
         const text = inp.value;
         inp.value = "";
 
@@ -1142,7 +1151,7 @@
           timestamp: Date.now(),
           seen: { [window.myName]: true },
         });
-      }
+
 
       function createGroup() {
         const gn = prompt("Enter Group Name:");
