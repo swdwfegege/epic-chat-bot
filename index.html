@@ -6,6 +6,7 @@
     <title>Nexus Terminal</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-check-compat.js"></script>
 
     <style>
       :root {
@@ -753,8 +754,19 @@
         messagingSenderId: "917293518076",
         appId: "1:917293518076:web:1cd71d04e6a37af7afdb79",
       };
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
+     // Initialize Firebase
+const app = firebase.initializeApp(firebaseConfig);
+
+// --- ADD THIS SECTION ---
+const appCheck = firebase.appCheck();
+appCheck.activate(
+  // Paste the Site Key you got from Google Cloud here
+  new firebase.appCheck.ReCaptchaEnterpriseProvider('6LcSoWosAAAAAMKjVz4JAK8aHwSPZuawuD2tJwKY'),
+  true // This allows the token to refresh automatically
+);
+// ------------------------
+
+const db = firebase.database();
       window.myName = null;
       let activeChat = null,
         chatType = "none",
