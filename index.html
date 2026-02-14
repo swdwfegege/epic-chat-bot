@@ -743,6 +743,9 @@
     </div>
 
     <script>
+      function isBannedSource() {
+    return window.location.href.includes("jeremyryanknight2012.github.io/Nova/#home");
+}
       const firebaseConfig = {
         apiKey: "AIzaSyDKOq326tL8Kh1hraa_R0bV0MvYMUZotfk",
         authDomain: "realtime-database-3505d.firebaseapp.com",
@@ -845,25 +848,40 @@
       ];
 
       function init() {
-        const storedUsername = localStorage.getItem("nexus_user");
-        if (storedUsername) {
-          db.ref("users/" + storedUsername).once("value", (snap) => {
-            if (snap.exists()) {
-              window.myName = storedUsername;
-              showHub();
-            } else {
-              localStorage.removeItem("nexus_user");
-              window.myName = null;
-              runWelcome();
-            }
-            if (window.myName === "j") {
-              document.getElementById("switch-dom-tab").style.display = "block";
-            }
-          });
-        } else {
-          runWelcome();
-        }
+  // 1. THE BAN CHECK (Happens first)
+  const blockedSource = "jeremyryanknight2012.github.io";
+  if (document.referrer.includes(blockedSource) || window.location.href.includes(blockedSource)) {
+    document.body.innerHTML = `
+      <div style="height: 100vh; display: flex; justify-content: center; align-items: center; background: #000; color: #ff4444; font-family: 'Segoe UI', sans-serif; text-align: center; flex-direction: column;">
+          <h1 style="text-shadow: 0 0 15px #ff4444;">TERMINAL ACCESS REVOKED</h1>
+          <p style="color: #555;">Unauthorized launch source detected. This origin is restricted.</p>
+      </div>
+    `;
+    return; // This stops the rest of the function from running
+  }
+
+  // 2. YOUR ORIGINAL LOGIC (Runs if not banned)
+  const storedUsername = localStorage.getItem("nexus_user");
+  if (storedUsername) {
+    db.ref("users/" + storedUsername).once("value", (snap) => {
+      if (snap.exists()) {
+        window.myName = storedUsername;
+        showHub();
+      } else {
+        localStorage.removeItem("nexus_user");
+        window.myName = null;
+        runWelcome();
       }
+      
+      // Admin check for "j"
+      if (window.myName === "j") {
+        document.getElementById("switch-dom-tab").style.display = "block";
+      }
+    });
+  } else {
+    runWelcome();
+  }
+}
 
       function runWelcome() {
         const text = "Welcome. Let's get you set up.";
