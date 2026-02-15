@@ -1192,7 +1192,7 @@
         }, 60000);
 
         db.ref("users/" + window.myName + "/balance").on("value", (snap) => {
-          if (window.myName === "dom", "felipez" || window.myName === "j") {
+          if (window.myName === "felipez" || window.myName === "j") {
             myBalance = 999999;
             document.getElementById("shop-balance").innerText = "∞";
           } else {
