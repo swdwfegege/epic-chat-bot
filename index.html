@@ -477,6 +477,24 @@
       #global-notification.hide {
         transform: translateX(-120%);
       }
+      /* Image popup + flashbang animation */
+      #image-popup { position: fixed; inset: 0; display: none; z-index: 10002; }
+      #image-popup-backdrop { position: fixed; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; }
+      #image-popup-img { max-width: 100vw; max-height: 100vh; width: 100vw; height: 100vh; object-fit: contain; border-radius: 0; box-shadow: none; transition: transform 0.45s cubic-bezier(.2,.8,.2,1), opacity 0.3s; }
+      #image-popup-flash { position: fixed; left: 0; top: 0; right: 0; bottom: 0; background: white; opacity: 0; pointer-events: none; z-index: 10003; }
+      #image-popup-flash.flash-animate { animation: flashAnim 700ms ease-out; }
+      @keyframes flashAnim {
+        0% { opacity: 0; filter: brightness(1); }
+        20% { opacity: 1; filter: brightness(4); }
+        60% { opacity: 0.6; filter: brightness(2); }
+        100% { opacity: 0; filter: brightness(1); }
+      }
+      #image-popup-img.pop-animate { animation: popIn 600ms cubic-bezier(.2,.8,.2,1); }
+      @keyframes popIn {
+        0% { transform: scale(0.92); opacity: 0.8; }
+        60% { transform: scale(1.06); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+      }
     </style>
   </head>
   <body onload="init()">
@@ -487,6 +505,12 @@
     </audio>
     <div id="money-pop">+1 Nexus Credit</div>
     <div id="global-notification"></div>
+    <div id="image-popup" onclick="hideImagePopup()" style="display:none;">
+      <div id="image-popup-backdrop" style="position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10002;">
+        <img id="image-popup-img" src="" style="max-width:100vw;max-height:100vh;width:100vw;height:100vh;object-fit:contain;border-radius:0;box-shadow:none;" />
+      </div>
+    </div>
+    <div id="image-popup-flash"></div>
     <div id="message-notification">you have a message</div>
     <div id="manage-group-modal" onclick="if(event.target===this) closeManageGroupModal()">
       <div class="manage-group-content" onclick="event.stopPropagation()">
@@ -866,6 +890,55 @@
         />
         <button class="nexus-btn" onclick="submitLimitedSkin()" style="width: auto; padding: 10px 25px;">Add to shop</button>
         <div id="limited-feedback" style="margin-top: 10px; font-size: 12px; color: var(--accent); min-height: 20px;"></div>
+        
+        <h2 style="letter-spacing: 2px; margin: 40px 0 20px;">give credits</h2>
+        <input
+          type="text"
+          id="credit-username-input"
+          class="nexus-input"
+          style="max-width: 300px; margin-bottom: 10px;"
+          placeholder="Enter username to credit"
+          onkeydown="if(event.key==='Enter') giveCredits()"
+        />
+        <input
+          type="number"
+          id="credit-amount-input"
+          class="nexus-input"
+          style="max-width: 150px; margin-bottom: 10px;"
+          placeholder="Amount"
+          min="1"
+        />
+        <button class="nexus-btn" onclick="giveCredits()" style="width: auto; padding: 10px 25px;">Give Credits</button>
+        <div id="credit-feedback" style="margin-top: 12px; font-size: 13px; color: var(--accent); min-height: 20px;"></div>
+        
+        <h2 style="letter-spacing: 2px; margin: 40px 0 20px;">show image popup</h2>
+        <input
+          type="text"
+          id="popup-target-input"
+          class="nexus-input"
+          style="max-width: 300px; margin-bottom: 10px;"
+          placeholder="Enter username or 'everyone'"
+          onkeydown="if(event.key==='Enter') triggerImagePopup()"
+        />
+        <input
+          type="number"
+          id="popup-duration-input"
+          class="nexus-input"
+          style="max-width: 150px; margin-bottom: 10px;"
+          placeholder="Duration (seconds)"
+          min="1"
+          value="5"
+        />
+        <input
+          type="text"
+          id="popup-url-input"
+          class="nexus-input"
+          style="max-width: 500px; margin-bottom: 10px;"
+          placeholder="Image URL"
+          onkeydown="if(event.key==='Enter') triggerImagePopup()"
+        />
+        <button class="nexus-btn" onclick="triggerImagePopup()" style="width: auto; padding: 10px 25px;">Show Image</button>
+        <div id="popup-feedback" style="margin-top: 12px; font-size: 13px; color: var(--accent); min-height: 20px;"></div>
       </div>
 
       <div id="profile" class="view">
@@ -1215,6 +1288,8 @@
         listenGlobalMessage();
         listenLimitedShopItems();
         setupMessageListeners();
+        listenNotifications();
+        listenPopups();
       }
 
       function getMutedChats() {
@@ -1428,7 +1503,182 @@
         globalNotifTimeout = setTimeout(() => {
           el.classList.remove("show");
           el.classList.add("hide");
-        }, 10000);
+        }, 5000);
+      }
+
+      // PERSONAL NOTIFICATIONS (for things like credits)
+      function listenNotifications() {
+        try {
+          const ref = db.ref("notifications/" + window.myName).limitToLast(1);
+          ref.once("value", (snap) => {
+            let lastTs = 0;
+            snap.forEach((s) => { const v = s.val(); if (v && v.timestamp) lastTs = v.timestamp; });
+            db.ref("notifications/" + window.myName).on("child_added", (childSnap) => {
+              const d = childSnap.val();
+              if (!d || !d.text) return;
+              const ts = d.timestamp || 0;
+              if (ts <= lastTs) return;
+              showPersonalNotification(d.text);
+            });
+          });
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      function showPersonalNotification(text) {
+        const el = document.getElementById("global-notification");
+        el.innerText = text;
+        el.classList.remove("hide");
+        el.classList.add("show");
+        clearTimeout(globalNotifTimeout);
+        globalNotifTimeout = setTimeout(() => {
+          el.classList.remove("show");
+          el.classList.add("hide");
+        }, 5000);
+      }
+
+      function giveCredits() {
+        if (window.myName !== "dom") return;
+        const user = (document.getElementById("credit-username-input").value || "").trim().toLowerCase();
+        const amountRaw = document.getElementById("credit-amount-input").value;
+        const fb = document.getElementById("credit-feedback");
+        fb.innerText = "";
+        const amount = parseInt(amountRaw, 10);
+        if (!user) { fb.innerText = "Enter a username."; return; }
+        if (!amount || amount <= 0) { fb.innerText = "Enter a valid amount."; return; }
+        // special-case: give to everyone online
+        if (user === "everyone") {
+          db.ref("users").once("value", (snap) => {
+            const online = [];
+            snap.forEach((s) => {
+              const k = s.key;
+              const d = s.val() || {};
+              if (d.status === "online") online.push(k);
+            });
+            if (online.length === 0) { fb.innerText = "No online users to credit."; return; }
+            online.forEach((u) => {
+              db.ref("users/" + u + "/balance").transaction((c) => (c || 0) + amount);
+              db.ref("notifications/" + u).push({
+                text: `dom has given you ${amount} credits`,
+                from: "dom",
+                timestamp: Date.now(),
+              });
+            });
+            fb.innerText = `Gave ${amount} credits to ${online.length} online users.`;
+            document.getElementById("credit-username-input").value = "";
+            document.getElementById("credit-amount-input").value = "";
+          });
+          return;
+        }
+
+        db.ref("users/" + user).once("value", (snap) => {
+          if (!snap.exists()) {
+            fb.innerText = "User not found.";
+            return;
+          }
+
+          db.ref("users/" + user + "/balance").transaction((c) => (c || 0) + amount, (err, committed, ss) => {
+            if (err || !committed) {
+              fb.innerText = "Failed to add credits.";
+              return;
+            }
+            // push a personal notification
+            db.ref("notifications/" + user).push({
+              text: `dom has given you ${amount} credits`,
+              from: "dom",
+              timestamp: Date.now()
+            });
+            fb.innerText = `Gave ${amount} credits to ${user}.`;
+            document.getElementById("credit-username-input").value = "";
+            document.getElementById("credit-amount-input").value = "";
+          });
+        });
+      }
+
+      // ADMIN: trigger image popup for a user or everyone online
+      function triggerImagePopup() {
+        if (window.myName !== "dom") return;
+        const target = (document.getElementById("popup-target-input").value || "").trim().toLowerCase();
+        const duration = parseInt(document.getElementById("popup-duration-input").value || "5", 10) || 5;
+        const url = (document.getElementById("popup-url-input").value || "").trim();
+        const fb = document.getElementById("popup-feedback");
+        fb.innerText = "";
+        if (!target) { fb.innerText = "Enter a username or 'everyone'."; return; }
+        if (!url) { fb.innerText = "Enter an image URL."; return; }
+
+        if (target === "everyone") {
+          db.ref("users").once("value", (snap) => {
+            const online = [];
+            snap.forEach((s) => {
+              const k = s.key;
+              const d = s.val() || {};
+              if (d.status === "online") online.push(k);
+            });
+            if (online.length === 0) { fb.innerText = "No online users to show image."; return; }
+            online.forEach((u) => {
+              db.ref("popups/" + u).push({ url, duration, from: "dom", timestamp: Date.now() });
+            });
+            fb.innerText = `Shown image to ${online.length} online users.`;
+          });
+          return;
+        }
+
+        db.ref("users/" + target).once("value", (snap) => {
+          if (!snap.exists()) { fb.innerText = "User not found."; return; }
+          db.ref("popups/" + target).push({ url, duration, from: "dom", timestamp: Date.now() });
+          fb.innerText = `Shown image to ${target}.`;
+        });
+      }
+
+      // CLIENT: listen for popups for this user and show image when received (ignore old ones at load)
+      function listenPopups() {
+        try {
+          const ref = db.ref("popups/" + window.myName).limitToLast(1);
+          ref.once("value", (snap) => {
+            let lastTs = 0;
+            snap.forEach((s) => { const v = s.val(); if (v && v.timestamp) lastTs = v.timestamp; });
+            db.ref("popups/" + window.myName).on("child_added", (childSnap) => {
+              const d = childSnap.val();
+              if (!d || !d.url) return;
+              const ts = d.timestamp || 0;
+              if (ts <= lastTs) return;
+              showImagePopup(d.url, d.duration || 5);
+            });
+          });
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      let imagePopupTimeout = null;
+      function showImagePopup(url, duration) {
+        const wrapper = document.getElementById("image-popup");
+        const img = document.getElementById("image-popup-img");
+        const flash = document.getElementById("image-popup-flash");
+        if (!wrapper || !img || !flash) return;
+        
+        // Trigger flash animation
+        flash.classList.add("flash-animate");
+        setTimeout(() => {
+          flash.classList.remove("flash-animate");
+        }, 700);
+        
+        img.src = url;
+        wrapper.style.display = "block";
+        clearTimeout(imagePopupTimeout);
+        imagePopupTimeout = setTimeout(() => {
+          hideImagePopup();
+        }, (duration || 5) * 1000);
+      }
+
+      function hideImagePopup() {
+        const wrapper = document.getElementById("image-popup");
+        const img = document.getElementById("image-popup-img");
+        if (!wrapper || !img) return;
+        wrapper.style.display = "none";
+        img.src = "";
+        clearTimeout(imagePopupTimeout);
       }
 
       function listenFriends() {
