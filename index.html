@@ -470,9 +470,11 @@
         box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
         transform: translateX(-120%);
         transition: transform 0.4s ease-out;
+        display: none;
       }
       #global-notification.show {
         transform: translateX(0);
+        display: block;
       }
       #global-notification.hide {
         transform: translateX(-120%);
@@ -519,6 +521,157 @@
         <button class="nexus-btn" style="margin-top: 15px; width: auto;" onclick="closeManageGroupModal()">Close</button>
       </div>
     </div>
+
+    <!-- Animated Wave Background -->
+    <div class="wave-bg">
+      <div class="wave wave-1"></div>
+      <div class="wave wave-2"></div>
+      <div class="wave wave-3"></div>
+      <div class="wave-lines">
+        <svg viewBox="0 0 1200 800" preserveAspectRatio="none">
+          <path class="flow-line line-1" d="M0,400 Q300,300 600,400 T1200,400" />
+          <path class="flow-line line-2" d="M0,450 Q300,350 600,450 T1200,450" />
+          <path class="flow-line line-3" d="M0,350 Q300,250 600,350 T1200,350" />
+          <path class="flow-line line-4" d="M0,500 Q300,400 600,500 T1200,500" />
+          <path class="flow-line line-5" d="M0,300 Q300,200 600,300 T1200,300" />
+        </svg>
+      </div>
+    </div>
+
+    <style>
+      .wave-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
+        overflow: hidden;
+      }
+      
+      .wave {
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(ellipse at center, rgba(0, 242, 255, 0.03) 0%, transparent 70%);
+        animation: wave-rotate 20s linear infinite;
+      }
+      
+      .wave-1 {
+        top: -50%;
+        left: -50%;
+        animation-delay: 0s;
+      }
+      
+      .wave-2 {
+        top: -50%;
+        left: -50%;
+        animation-delay: -7s;
+        animation-duration: 25s;
+      }
+      
+      .wave-3 {
+        top: -50%;
+        left: -50%;
+        animation-delay: -14s;
+        animation-duration: 30s;
+      }
+      
+      @keyframes wave-rotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .wave-lines {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.4;
+      }
+      
+      .wave-lines svg {
+        width: 100%;
+        height: 100%;
+      }
+      
+      .flow-line {
+        fill: none;
+        stroke: var(--accent);
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        filter: drop-shadow(0 0 3px rgba(0, 242, 255, 0.5));
+      }
+      
+      .line-1 { animation: flow 8s ease-in-out infinite; }
+      .line-2 { animation: flow 10s ease-in-out infinite; animation-delay: -2s; }
+      .line-3 { animation: flow 12s ease-in-out infinite; animation-delay: -4s; }
+      .line-4 { animation: flow 9s ease-in-out infinite; animation-delay: -6s; }
+      .line-5 { animation: flow 11s ease-in-out infinite; animation-delay: -8s; }
+      
+      @keyframes flow {
+        0%, 100% {
+          d: path("M0,400 Q300,300 600,400 T1200,400");
+        }
+        25% {
+          d: path("M0,400 Q300,500 600,400 T1200,400");
+        }
+        50% {
+          d: path("M0,400 Q300,300 600,400 T1200,400");
+        }
+        75% {
+          d: path("M0,400 Q300,500 600,400 T1200,400");
+        }
+      }
+      
+      /* Adjust line animations for different starting positions */
+      .line-2 { 
+        animation-name: flow2;
+        stroke: rgba(0, 255, 136, 0.6);
+      }
+      @keyframes flow2 {
+        0%, 100% { d: path("M0,450 Q300,350 600,450 T1200,450"); }
+        25% { d: path("M0,450 Q300,550 600,450 T1200,450"); }
+        50% { d: path("M0,450 Q300,350 600,450 T1200,450"); }
+        75% { d: path("M0,450 Q300,550 600,450 T1200,450"); }
+      }
+      
+      .line-3 { 
+        animation-name: flow3;
+        stroke: rgba(255, 0, 242, 0.4);
+      }
+      @keyframes flow3 {
+        0%, 100% { d: path("M0,350 Q300,250 600,350 T1200,350"); }
+        25% { d: path("M0,350 Q300,450 600,350 T1200,350"); }
+        50% { d: path("M0,350 Q300,250 600,350 T1200,350"); }
+        75% { d: path("M0,350 Q300,450 600,350 T1200,350"); }
+      }
+      
+      .line-4 { 
+        animation-name: flow4;
+        stroke: rgba(0, 242, 255, 0.5);
+      }
+      @keyframes flow4 {
+        0%, 100% { d: path("M0,500 Q300,400 600,500 T1200,500"); }
+        25% { d: path("M0,500 Q300,600 600,500 T1200,500"); }
+        50% { d: path("M0,500 Q300,400 600,500 T1200,500"); }
+        75% { d: path("M0,500 Q300,600 600,500 T1200,500"); }
+      }
+      
+      .line-5 { 
+        animation-name: flow5;
+        stroke: rgba(255, 170, 0, 0.3);
+      }
+      @keyframes flow5 {
+        0%, 100% { d: path("M0,300 Q300,200 600,300 T1200,300"); }
+        25% { d: path("M0,300 Q300,400 600,300 T1200,300"); }
+        50% { d: path("M0,300 Q300,200 600,300 T1200,300"); }
+        75% { d: path("M0,300 Q300,400 600,300 T1200,300"); }
+      }
+    </style>
+
     <div
       id="welcome-screen"
       style="
@@ -527,54 +680,90 @@
         justify-content: center;
         align-items: center;
         flex-direction: column;
+        background: transparent;
       "
     >
       <div
-        id="type-box"
+        id="terminal-container"
         style="
-          font-size: 1.6rem;
-          font-weight: 400;
-          margin-bottom: 40px;
-          line-height: 1.5;
-          text-align: center;
-          max-width: 420px;
-          opacity: 0.9;
-        "
-      ></div>
-
-      <div
-        id="profile-card"
-        style="
-          background: rgba(255, 255, 255, 0.06);
-          padding: 35px;
-          border-radius: 10px;
-          width: 320px;
-          display: none;
-          border: 1px solid var(--border);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+          width: 100vw;
+          height: 100vh;
+          background: rgba(0, 0, 0, 0.7);
+          backdrop-filter: blur(5px);
+          padding: 0;
+          font-family: 'Consolas', 'Courier New', monospace;
+          position: relative;
+          margin: 0;
+          overflow: hidden;
         "
       >
-        <h3 style="margin-top: 0; font-weight: 500">Create your username</h3>
-
-        <input
-          type="text"
-          id="username-input"
-          class="nexus-input"
-          placeholder="Username"
-        />
-        <div id="error-message"></div>
-        <button class="nexus-btn" onclick="register()">Confirm Entry</button>
+        <div id="terminal-output" style="color: #00ff00; font-size: 16px; line-height: 1.2; height: calc(100vh - 30px); overflow-y: auto; padding: 10px; margin: 0; white-space: pre-wrap;">
+          <div id="terminal-text"></div>
+          <div id="loading-messages" style="display: none;"></div>
+          <div id="username-input-area" style="display: none;">
+            <br><span style="color: #00ff00;">enter a username and hit enter</span><br>
+            <span style="color: #00ff00;">C:\\Users\\Nexus&gt;</span> 
+            <input 
+              type="text" 
+              id="terminal-username-input" 
+              style="
+                background: transparent; 
+                border: none; 
+                color: #00ff00; 
+                font-family: 'Consolas', 'Courier New', monospace; 
+                font-size: 16px; 
+                outline: none; 
+                caret-color: #00ff00;
+                width: 200px;
+              "
+              autocomplete="off"
+            />
+            <span id="terminal-cursor" style="background: #00ff00; width: 8px; height: 18px; display: inline-block; animation: blink 1s infinite; vertical-align: text-bottom;"></span>
+          </div>
+        </div>
       </div>
+
+      <input type="text" id="username-input" style="display: none;" />
     </div>
+
+    <style>
+      @keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
+      }
+      
+      @keyframes slideUp {
+        from {
+          transform: translateY(50px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      
+      .color-option:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px currentColor;
+      }
+      
+      .color-option.selected {
+        border-color: white !important;
+        transform: scale(1.15);
+        box-shadow: 0 0 20px currentColor;
+      }
+    </style>
 
     <div id="hub">
       <nav class="navbar">
         <div class="nav-item" onclick="tab('water')">water</div>
-        <div id="nav-chat" class="nav-item active" onclick="tab('chat')" style="position: relative;">
+        <div class="nav-item" onclick="tab('chat')" style="position: relative;">
           chat <span id="chat-badge" class="badge">!</span>
         </div>
         <div class="nav-item" onclick="tab('shop')">shop</div>
         <div class="nav-item" onclick="tab('inventory')">inventory</div>
+        <div class="nav-item" onclick="tab('leaderboards')">leaderboards</div>
         <div id="nav-admin" class="nav-item" onclick="tab('admin')" style="display: none;">admin</div>
         <div class="nav-item" onclick="viewProfile(window.myName)">
           my profile <span id="notif-badge" class="badge">!</span>
@@ -811,14 +1000,34 @@
         <div class="shop-grid" id="shop-items-container"></div>
       </div>
 
-      <div
-        id="inventory"
-        class="view"
-        style="flex-direction: column; align-items: center; overflow-y: auto"
-      >
+      <div id="inventory" class="view" style="flex-direction: column; align-items: center; overflow-y: auto">
         <h2 style="margin-top: 30px; letter-spacing: 3px">inventory</h2>
         <p style="font-size: 12px; opacity: 0.7; margin-bottom: 20px">backgrounds you own</p>
         <div class="shop-grid" id="inventory-items-container"></div>
+      </div>
+
+      <div id="leaderboards" class="view" style="flex-direction: column; align-items: center; padding: 40px; overflow-y: auto;">
+        <h2 style="letter-spacing: 3px; margin-bottom: 30px;">leaderboards</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; width: 100%; max-width: 1200px;">
+          <!-- Credits Leaderboard -->
+          <div style="background: var(--glass); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+            <h3 style="color: var(--accent); margin-top: 0; text-align: center; letter-spacing: 2px;">💰 Top Credits</h3>
+            <div id="credits-leaderboard" style="display: flex; flex-direction: column; gap: 10px;"></div>
+          </div>
+          
+          <!-- Time Played Leaderboard -->
+          <div style="background: var(--glass); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+            <h3 style="color: var(--accent); margin-top: 0; text-align: center; letter-spacing: 2px;">⏱️ Time Played</h3>
+            <div id="time-leaderboard" style="display: flex; flex-direction: column; gap: 10px;"></div>
+          </div>
+          
+          <!-- Backgrounds Leaderboard -->
+          <div style="background: var(--glass); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+            <h3 style="color: var(--accent); margin-top: 0; text-align: center; letter-spacing: 2px;">🎨 Most Backgrounds</h3>
+            <div id="backgrounds-leaderboard" style="display: flex; flex-direction: column; gap: 10px;"></div>
+          </div>
+        </div>
       </div>
 
       <div id="admin" class="view" style="flex-direction: column; align-items: center; padding: 40px; overflow-y: auto;">
@@ -1182,65 +1391,184 @@
       }
 
       function runWelcome() {
-        const text = "Welcome. Let's get you set up.";
+        const terminalText = document.getElementById("terminal-text");
+        const loadingMessages = document.getElementById("loading-messages");
+        const usernameInputArea = document.getElementById("username-input-area");
+        const terminalUsernameInput = document.getElementById("terminal-username-input");
+        const terminal = document.getElementById("terminal-container");
+        const terminalOutput = document.getElementById("terminal-output");
+        
+        // Clear terminal and start
+        terminalText.innerHTML = "Microsoft Windows [Version 10.0.19045.2364]<br>(c) Microsoft Corporation. All rights reserved.<br><br>";
+        
+        // Welcome message typing effect
+        const welcomeText = "C:\\Users\\Nexus> nexus.exe --welcome";
         let i = 0;
-        const box = document.getElementById("type-box");
-        const card = document.getElementById("profile-card");
-
-        const interval = setInterval(() => {
-          box.innerText += text[i];
-          i++;
-
-          if (i === text.length) {
-            clearInterval(interval);
+        
+        const typeInterval = setInterval(() => {
+          if (i < welcomeText.length) {
+            terminalText.innerHTML += welcomeText[i];
+            i++;
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+          } else {
+            clearInterval(typeInterval);
+            
+            // Add response
             setTimeout(() => {
-              box.style.transition = "opacity 0.5s";
-              box.style.opacity = "0";
-            }, 400);
-            setTimeout(() => {
-              box.style.display = "none";
-              card.style.display = "block";
-            }, 900);
+              terminalText.innerHTML += "<br>welcome to nexus<br>ready to get started<br><br>";
+              terminalOutput.scrollTop = terminalOutput.scrollHeight;
+              
+              // Show loading messages rapidly
+              setTimeout(() => {
+                loadingMessages.style.display = "block";
+                const messages = [
+                  "loading shop...",
+                  "updating profile...",
+                  "building usernames...", 
+                  "installing water...",
+                  "initializing chat...",
+                  "configuring inventory...",
+                  "syncing leaderboards...",
+                  "enabling notifications...",
+                  "optimizing performance...",
+                  "finalizing setup..."
+                ];
+                
+                let msgIndex = 0;
+                const msgInterval = setInterval(() => {
+                  if (msgIndex < messages.length) {
+                    loadingMessages.innerHTML += messages[msgIndex] + "<br>";
+                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                    msgIndex++;
+                  } else {
+                    clearInterval(msgInterval);
+                    
+                    // Show completion message
+                    setTimeout(() => {
+                      loadingMessages.innerHTML += "<br>System initialized successfully.<br><br>";
+                      terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                      
+                      // Show username input AFTER loading completes
+                      setTimeout(() => {
+                        usernameInputArea.style.display = "block";
+                        terminalUsernameInput.focus();
+                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                        
+                        // Handle username input
+                        terminalUsernameInput.addEventListener("keypress", function(e) {
+                          if (e.key === "Enter") {
+                            const username = this.value.trim();
+                            if (username) {
+                              // Show the entered command at the bottom
+                              terminalText.innerHTML += `<br>C:\\Users\\Nexus>${username}<br>`;
+                              terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                              
+                              // Hide the input area
+                              usernameInputArea.style.display = "none";
+                              
+                              // Process username registration/login
+                              processUsername(username);
+                            }
+                          }
+                        });
+                      }, 500);
+                    }, 500);
+                  }
+                }, 100); // Fast loading messages
+              }, 800);
+            }, 300);
           }
-        }, 45);
+        }, 50);
+      }
+
+      function processUsername(username) {
+        const terminalText = document.getElementById("terminal-text");
+        const terminalOutput = document.getElementById("terminal-output");
+        
+        // Show processing messages
+        terminalText.innerHTML += `Creating user: ${username}...<br>User created successfully.<br><br>`;
+        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        
+        // Store username and register
+        setTimeout(() => {
+          document.getElementById("username-input").value = username;
+          register();
+        }, 500);
       }
 
       function register() {
-  const name = document.getElementById("username-input").value.trim().toLowerCase();
-  const errorMsg = document.getElementById("error-message");
-  errorMsg.innerText = "";
-
-  if (!name) {
-    errorMsg.innerText = "Please enter a username";
-    return;
-  }
-
-  // --- NEW PIN LOGIC FOR DOM ---
-  if (name === "dom") {
-    const pin = prompt("Enter Security PIN for 'dom':");
-    if (pin !== "1699") {
-      errorMsg.innerText = "Invalid PIN. Access Denied.";
-      return;
-    }
-  }
-  // -----------------------------
-
-  db.ref("users/" + name).once("value", (snap) => {
-    if (snap.exists() && name !== "dom") { // Added check so 'dom' can re-login
-      errorMsg.innerText = "This username is taken";
-    } else {
-      localStorage.setItem("nexus_user", name);
-      window.myName = name;
-
-      db.ref("users/" + name).update({
-        last_login: Date.now(),
-        status: "online",
-      }).then(() => {
-        location.reload();
-      });
-    }
-  });
-}
+        const name = document.getElementById("username-input").value.trim().toLowerCase();
+        const terminalText = document.getElementById("terminal-text");
+        const terminalOutput = document.getElementById("terminal-output");
+        
+        if (!name) {
+          terminalText.innerHTML += `<span style="color: #ff4444;">Error: Please enter a username</span><br>`;
+          terminalOutput.scrollTop = terminalOutput.scrollHeight;
+          return;
+        }
+        
+        // --- NEW PIN LOGIC FOR DOM ---
+        if (name === "dom") {
+          const pin = prompt("Enter Security PIN for 'dom':");
+          if (pin !== "1699") {
+            terminalText.innerHTML += `<span style="color: #ff4444;">Invalid PIN. Access Denied.</span><br>`;
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            return;
+          }
+        }
+        // -----------------------------
+        
+        db.ref("users/" + name).once("value", (snap) => {
+          if (snap.exists() && name !== "dom") {
+            // Account exists - login
+            terminalText.innerHTML += `<span style="color: #00ff88;">Account found. Logging in...</span><br>`;
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            
+            localStorage.setItem("nexus_user", name);
+            window.myName = name;
+            
+            db.ref("users/" + name).update({
+              last_login: Date.now(),
+              status: "online",
+            }).then(() => {
+              terminalText.innerHTML += `<span style="color: #00ff88;">Welcome back, ${name}!</span><br>`;
+              terminalOutput.scrollTop = terminalOutput.scrollHeight;
+              setTimeout(() => location.reload(), 1000);
+            });
+          } else {
+            // New account - create
+            if (!snap.exists()) {
+              terminalText.innerHTML += `<span style="color: #00ff88;">Creating new account...</span><br>`;
+            } else {
+              terminalText.innerHTML += `<span style="color: #00ff88;">Logging in...</span><br>`;
+            }
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            
+            localStorage.setItem("nexus_user", name);
+            window.myName = name;
+            
+            const updates = {
+              last_login: Date.now(),
+              status: "online",
+            };
+            
+            // Set initial balance if new user
+            if (!snap.exists()) {
+              updates.balance = 0;
+            }
+            
+            db.ref("users/" + name).update(updates).then(() => {
+              if (!snap.exists()) {
+                terminalText.innerHTML += `<span style="color: #00ff88;">Account created successfully! Welcome to Nexus, ${name}!</span><br>`;
+              } else {
+                terminalText.innerHTML += `<span style="color: #00ff88;">Welcome back, ${name}!</span><br>`;
+              }
+              terminalOutput.scrollTop = terminalOutput.scrollHeight;
+              setTimeout(() => location.reload(), 1500);
+            });
+          }
+        });
+      }
 
       function showHub() {
         document.getElementById("welcome-screen").style.display = "none";
@@ -1262,6 +1590,11 @@
           const pop = document.getElementById("money-pop");
           pop.style.display = "block";
           setTimeout(() => (pop.style.display = "none"), 3000);
+          
+          // Update time played (60 seconds = 1 minute)
+          db.ref("users/" + window.myName + "/timePlayed").transaction(
+            (t) => (t || 0) + 60
+          );
         }, 60000);
 
         db.ref("users/" + window.myName + "/balance").on("value", (snap) => {
@@ -2258,6 +2591,166 @@ function tab(id) {
     });
   }
 }
+
+      // Leaderboard functions
+      let leaderboardInterval = null;
+      
+      function updateLeaderboards() {
+        updateCreditsLeaderboard();
+        updateTimeLeaderboard();
+        updateBackgroundsLeaderboard();
+      }
+      
+      function updateCreditsLeaderboard() {
+        db.ref("users").once("value", (snap) => {
+          const users = [];
+          snap.forEach((child) => {
+            const userData = child.val();
+            if (userData.balance && child.key !== "dom") {
+              users.push({ name: child.key, credits: userData.balance });
+            }
+          });
+          
+          users.sort((a, b) => b.credits - a.credits);
+          const top5 = users.slice(0, 5);
+          
+          const container = document.getElementById("credits-leaderboard");
+          container.innerHTML = "";
+          
+          if (top5.length === 0) {
+            container.innerHTML = "<div style='text-align: center; color: var(--accent); padding: 20px;'>No users with credits yet</div>";
+            return;
+          }
+          
+          top5.forEach((user, index) => {
+            const div = document.createElement("div");
+            div.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid var(--border);";
+            div.innerHTML = `
+              <span style="color: ${index < 3 ? 'var(--accent)' : 'white'}; font-weight: ${index < 3 ? 'bold' : 'normal'};">
+                ${index + 1}. ${user.name}
+              </span>
+              <span style="color: var(--online); font-weight: bold;">${user.credits} NC</span>
+            `;
+            container.appendChild(div);
+            
+            // Award leaderboard background to top 5
+            if (index < 5) {
+              awardLeaderboardBackground(user.name);
+            }
+          });
+        });
+      }
+      
+      function updateTimeLeaderboard() {
+        db.ref("users").once("value", (snap) => {
+          const users = [];
+          snap.forEach((child) => {
+            const userData = child.val();
+            // Check for various possible time tracking fields
+            const timeValue = userData.timePlayed || userData.totalTime || userData.sessionTime || 0;
+            if (timeValue && child.key !== "dom") {
+              users.push({ name: child.key, time: timeValue });
+            }
+          });
+          
+          users.sort((a, b) => b.time - a.time);
+          const top5 = users.slice(0, 5);
+          
+          const container = document.getElementById("time-leaderboard");
+          container.innerHTML = "";
+          
+          if (top5.length === 0) {
+            container.innerHTML = "<div style='text-align: center; color: var(--accent); padding: 20px;'>No time data available yet</div>";
+            return;
+          }
+          
+          top5.forEach((user, index) => {
+            const hours = Math.floor(user.time / 3600);
+            const minutes = Math.floor((user.time % 3600) / 60);
+            const timeStr = `${hours}h ${minutes}m`;
+            
+            const div = document.createElement("div");
+            div.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid var(--border);";
+            div.innerHTML = `
+              <span style="color: ${index < 3 ? 'var(--accent)' : 'white'}; font-weight: ${index < 3 ? 'bold' : 'normal'};">
+                ${index + 1}. ${user.name}
+              </span>
+              <span style="color: var(--online); font-weight: bold;">${timeStr}</span>
+            `;
+            container.appendChild(div);
+            
+            // Award leaderboard background to top 5
+            if (index < 5) {
+              awardLeaderboardBackground(user.name);
+            }
+          });
+        });
+      }
+      
+      function updateBackgroundsLeaderboard() {
+        db.ref("users").once("value", (snap) => {
+          const users = [];
+          snap.forEach((child) => {
+            const userData = child.val();
+            if (userData.inventory && child.key !== "dom") {
+              const bgCount = Object.keys(userData.inventory).filter(key => userData.inventory[key]).length;
+              users.push({ name: child.key, count: bgCount });
+            }
+          });
+          
+          users.sort((a, b) => b.count - a.count);
+          const top5 = users.slice(0, 5);
+          
+          const container = document.getElementById("backgrounds-leaderboard");
+          container.innerHTML = "";
+          
+          top5.forEach((user, index) => {
+            const div = document.createElement("div");
+            div.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid var(--border);";
+            div.innerHTML = `
+              <span style="color: ${index < 3 ? 'var(--accent)' : 'white'}; font-weight: ${index < 3 ? 'bold' : 'normal'};">
+                ${index + 1}. ${user.name}
+              </span>
+              <span style="color: var(--online); font-weight: bold;">${user.count} backgrounds</span>
+            `;
+            container.appendChild(div);
+            
+            // Award leaderboard background to top 5
+            if (index < 5) {
+              awardLeaderboardBackground(user.name);
+            }
+          });
+        });
+      }
+      
+      function awardLeaderboardBackground(username) {
+        const leaderboardBg = "";
+        
+        if (!leaderboardBg) return; // Skip if no background URL
+        
+        db.ref("users/" + username + "/inventory/leaderboard_background").set(true).then(() => {
+          console.log(`Awarded leaderboard background to ${username}`);
+        }).catch((error) => {
+          console.error("Failed to award leaderboard background:", error);
+        });
+      }
+      
+      // Start leaderboard updates when tab is opened
+      const originalTab = tab;
+      tab = function(id) {
+        originalTab(id);
+        
+        if (id === 'leaderboards') {
+          updateLeaderboards();
+          if (leaderboardInterval) clearInterval(leaderboardInterval);
+          leaderboardInterval = setInterval(updateLeaderboards, 10000); // Update every 10 seconds
+        } else {
+          if (leaderboardInterval) {
+            clearInterval(leaderboardInterval);
+            leaderboardInterval = null;
+          }
+        }
+      };
     </script>
   </body>
 </html>
