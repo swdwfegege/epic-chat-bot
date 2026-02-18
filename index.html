@@ -429,6 +429,50 @@
         }
       }
 
+      /* --- SLOT MACHINE STYLES --- */
+      .slot-machine {
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+      .slot-machine:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 242, 255, 0.3);
+      }
+      .slot-reel {
+        transition: all 0.1s;
+      }
+      .slot-reel.spinning {
+        animation: reelSpin 0.1s linear infinite;
+        filter: blur(1px);
+      }
+      @keyframes reelSpin {
+        0% { transform: scale(0.95); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(0.95); }
+      }
+      .slot-reel.win {
+        animation: reelWin 0.5s ease-out;
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 20px var(--accent);
+      }
+      @keyframes reelWin {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+      }
+      .slot-display.win {
+        animation: displayWin 1s ease-out;
+        border-color: var(--online) !important;
+        box-shadow: 0 0 30px var(--online);
+      }
+      @keyframes displayWin {
+        0%, 100% { box-shadow: 0 0 30px var(--online); }
+        50% { box-shadow: 0 0 60px var(--online), inset 0 0 20px var(--online); }
+      }
+      #bet-amount:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 10px var(--accent);
+      }
+
       .invite-card {
         background: rgba(0, 0, 0, 0.3);
         padding: 10px;
@@ -764,6 +808,8 @@
         <div class="nav-item" onclick="tab('shop')">shop</div>
         <div class="nav-item" onclick="tab('inventory')">inventory</div>
         <div class="nav-item" onclick="tab('leaderboards')">leaderboards</div>
+        <div class="nav-item" onclick="tab('gambling')">gambling</div>
+        <div class="nav-item" onclick="tab('security')">security <span id="security-badge" class="badge" style="display: none;">!</span></div>
         <div id="nav-admin" class="nav-item" onclick="tab('admin')" style="display: none;">admin</div>
         <div class="nav-item" onclick="viewProfile(window.myName)">
           my profile <span id="notif-badge" class="badge">!</span>
@@ -807,7 +853,8 @@
                   class="nexus-input"
                   style="margin: 0; padding: 8px"
                   placeholder="Message..."
-                  onkeydown="if(event.key==='Enter') sendMsg('water')"
+                  maxlength="212"
+                  onkeydown="if(event.key==='Enter')sendMsg('water')"
                 />
               </div>
             </div>
@@ -981,7 +1028,8 @@
                 class="nexus-input"
                 style="margin: 0"
                 placeholder="Message..."
-                onkeydown="if(event.key==='Enter') sendMsg('main')"
+                maxlength="212"
+                onkeydown="if(event.key==='Enter')sendMsg()"
               />
             </div>
           </div>
@@ -1027,6 +1075,124 @@
             <h3 style="color: var(--accent); margin-top: 0; text-align: center; letter-spacing: 2px;">🎨 Most Backgrounds</h3>
             <div id="backgrounds-leaderboard" style="display: flex; flex-direction: column; gap: 10px;"></div>
           </div>
+        </div>
+      </div>
+
+      <div id="gambling" class="view" style="flex-direction: column; align-items: center; padding: 40px; overflow-y: auto;">
+        <h2 style="letter-spacing: 3px; margin-bottom: 30px;">gambling</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 40px; width: 100%; max-width: 900px;">
+          <!-- Free Slot Machine -->
+          <div class="slot-machine" style="background: var(--glass); border: 2px solid var(--border); border-radius: 15px; padding: 30px; text-align: center;">
+            <h3 style="color: var(--accent); margin-bottom: 20px; letter-spacing: 2px;">🎰 Practice Slots</h3>
+            <p style="font-size: 12px; opacity: 0.7; margin-bottom: 20px;">Free to play - no rewards</p>
+            
+            <div class="slot-display" id="free-slot-display" style="background: #000; border: 3px solid var(--accent); border-radius: 10px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
+              <div class="slot-reel" id="free-reel-1" style="width: 60px; height: 60px; background: #111; border: 2px solid #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 30px;">🎰</div>
+              <div class="slot-reel" id="free-reel-2" style="width: 60px; height: 60px; background: #111; border: 2px solid #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 30px;">🎰</div>
+              <div class="slot-reel" id="free-reel-3" style="width: 60px; height: 60px; background: #111; border: 2px solid #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 30px;">🎰</div>
+            </div>
+            
+            <div id="free-result" style="min-height: 24px; margin-bottom: 15px; font-size: 14px;"></div>
+            <button class="nexus-btn" onclick="spinFreeSlot()" id="free-spin-btn" style="width: auto; padding: 12px 30px;">SPIN</button>
+          </div>
+          
+          <!-- Betting Slot Machine -->
+          <div class="slot-machine" style="background: var(--glass); border: 2px solid var(--accent); border-radius: 15px; padding: 30px; text-align: center; box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);">
+            <h3 style="color: var(--accent); margin-bottom: 20px; letter-spacing: 2px;">💰 High Stakes Slots</h3>
+            <p style="font-size: 12px; opacity: 0.7; margin-bottom: 20px;">Bet credits - Win 2x or 3x your bet!</p>
+            
+            <div style="margin-bottom: 15px;">
+              <label style="font-size: 12px; opacity: 0.7;">Bet Amount:</label>
+              <input type="number" id="bet-amount" class="nexus-input" style="width: 120px; margin-left: 10px; text-align: center;" value="100" min="10" max="10000">
+            </div>
+            
+            <div class="slot-display" id="bet-slot-display" style="background: #000; border: 3px solid var(--accent); border-radius: 10px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
+              <div class="slot-reel" id="bet-reel-1" style="width: 60px; height: 60px; background: #111; border: 2px solid #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 30px;">💎</div>
+              <div class="slot-reel" id="bet-reel-2" style="width: 60px; height: 60px; background: #111; border: 2px solid #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 30px;">💎</div>
+              <div class="slot-reel" id="bet-reel-3" style="width: 60px; height: 60px; background: #111; border: 2px solid #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 30px;">💎</div>
+            </div>
+            
+            <div id="bet-result" style="min-height: 24px; margin-bottom: 15px; font-size: 14px;"></div>
+            <button class="nexus-btn" onclick="spinBetSlot()" id="bet-spin-btn" style="width: auto; padding: 12px 30px; background: linear-gradient(135deg, var(--accent), var(--online));">SPIN (<span id="current-bet">100</span> credits)</button>
+          </div>
+        </div>
+        
+        <div style="margin-top: 30px; text-align: center; opacity: 0.6; font-size: 12px;">
+          <p>💎💎💎 = 3x Win | 🍀🍀🍀 = 2x Win | 7️⃣7️⃣7️⃣ = Jackpot 5x</p>
+        </div>
+      </div>
+
+      <div id="security" class="view" style="flex-direction: column; align-items: center; padding: 40px; overflow-y: auto;">
+        <h2 style="letter-spacing: 3px; margin-bottom: 30px;">security</h2>
+        
+        <div class="security-container" style="background: var(--glass); border: 1px solid var(--border); border-radius: 15px; padding: 30px; max-width: 400px; width: 100%;">
+          <h3 style="color: var(--accent); margin-bottom: 20px; letter-spacing: 2px; text-align: center;">🔐 Account PIN</h3>
+          
+          <div id="pin-status" style="text-align: center; margin-bottom: 20px; font-size: 14px;">
+            Checking PIN status...
+          </div>
+          
+          <div id="pin-setup-section" style="display: none;">
+            <p style="font-size: 12px; opacity: 0.7; margin-bottom: 15px; text-align: center;">
+              Set a 4-digit PIN to protect your account. You'll need to enter this PIN when logging in.
+            </p>
+            <input
+              type="password"
+              id="new-pin-input"
+              class="nexus-input"
+              style="max-width: 200px; margin: 0 auto 15px auto; display: block; text-align: center; letter-spacing: 8px;"
+              placeholder="0000"
+              maxlength="4"
+              pattern="[0-9]{4}"
+              inputmode="numeric"
+            />
+            <input
+              type="password"
+              id="confirm-pin-input"
+              class="nexus-input"
+              style="max-width: 200px; margin: 0 auto 15px auto; display: block; text-align: center; letter-spacing: 8px;"
+              placeholder="Confirm PIN"
+              maxlength="4"
+              pattern="[0-9]{4}"
+              inputmode="numeric"
+            />
+            <button class="nexus-btn" onclick="setPin()" style="width: auto; padding: 12px 30px; margin: 0 auto; display: block;">Set PIN</button>
+          </div>
+          
+          <div id="pin-change-section" style="display: none;">
+            <p style="font-size: 12px; opacity: 0.7; margin-bottom: 15px; text-align: center;">
+              You already have a PIN set. Enter your current PIN to change it.
+            </p>
+            <input
+              type="password"
+              id="current-pin-input"
+              class="nexus-input"
+              style="max-width: 200px; margin: 0 auto 15px auto; display: block; text-align: center; letter-spacing: 8px;"
+              placeholder="Current PIN"
+              maxlength="4"
+              pattern="[0-9]{4}"
+              inputmode="numeric"
+            />
+            <input
+              type="password"
+              id="new-change-pin-input"
+              class="nexus-input"
+              style="max-width: 200px; margin: 0 auto 15px auto; display: block; text-align: center; letter-spacing: 8px;"
+              placeholder="New PIN"
+              maxlength="4"
+              pattern="[0-9]{4}"
+              inputmode="numeric"
+            />
+            <button class="nexus-btn" onclick="changePin()" style="width: auto; padding: 12px 30px; margin: 0 auto 10px auto; display: block;">Change PIN</button>
+            <button class="nexus-btn" onclick="removePin()" style="width: auto; padding: 10px 20px; margin: 0 auto; display: block; background: transparent; border-color: var(--alert); color: var(--alert); font-size: 12px;">Remove PIN</button>
+          </div>
+          
+          <div id="pin-feedback" style="text-align: center; margin-top: 15px; font-size: 13px; min-height: 20px;"></div>
+        </div>
+        
+        <div style="margin-top: 20px; text-align: center; opacity: 0.6; font-size: 11px; max-width: 400px;">
+          <p>💡 Tip: Without a PIN, anyone can log into your account if they know your username.</p>
         </div>
       </div>
 
@@ -1148,6 +1314,34 @@
         />
         <button class="nexus-btn" onclick="triggerImagePopup()" style="width: auto; padding: 10px 25px;">Show Image</button>
         <div id="popup-feedback" style="margin-top: 12px; font-size: 13px; color: var(--accent); min-height: 20px;"></div>
+        
+        <h2 style="letter-spacing: 2px; margin: 40px 0 20px;">set slot luck</h2>
+        <input
+          type="text"
+          id="luck-username-input"
+          class="nexus-input"
+          style="max-width: 300px; margin-bottom: 10px;"
+          placeholder="Enter username to modify luck"
+          onkeydown="if(event.key==='Enter') setUserLuck()"
+        />
+        <input
+          type="number"
+          id="luck-value-input"
+          class="nexus-input"
+          style="max-width: 150px; margin-bottom: 10px;"
+          placeholder="Luck multiplier"
+          min="0.1"
+          max="10"
+          step="0.1"
+          value="1"
+        />
+        <div style="font-size: 11px; opacity: 0.7; margin-bottom: 10px; max-width: 300px; text-align: center;">
+          1.0 = normal (25% win on bet, 40% on free)<br>
+          2.0 = 2x luck (50% win on bet, 80% on free)<br>
+          0.5 = half luck (12% win on bet, 20% on free)
+        </div>
+        <button class="nexus-btn" onclick="setUserLuck()" style="width: auto; padding: 10px 25px;">Set Luck</button>
+        <div id="luck-feedback" style="margin-top: 12px; font-size: 13px; color: var(--accent); min-height: 20px;"></div>
       </div>
 
       <div id="profile" class="view">
@@ -1367,6 +1561,7 @@
             db.ref("users/" + storedUsername).once("value", (snap) => {
               if (snap.exists()) {
                 window.myName = storedUsername;
+                loadUserLuck(); // Load user's slot luck
                 showHub();
               } else {
                 localStorage.removeItem("nexus_user");
@@ -1520,53 +1715,68 @@
         
         db.ref("users/" + name).once("value", (snap) => {
           if (snap.exists() && name !== "dom") {
-            // Account exists - login
-            terminalText.innerHTML += `<span style="color: #00ff88;">Account found. Logging in...</span><br>`;
-            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            // Account exists - check for PIN
+            const userData = snap.val();
             
-            localStorage.setItem("nexus_user", name);
-            window.myName = name;
-            
-            db.ref("users/" + name).update({
-              last_login: Date.now(),
-              status: "online",
-            }).then(() => {
-              terminalText.innerHTML += `<span style="color: #00ff88;">Welcome back, ${name}!</span><br>`;
+            if (userData.pin) {
+              // User has a PIN set, require it
+              terminalText.innerHTML += `<span style="color: var(--accent);">Account protected by PIN...</span><br>`;
               terminalOutput.scrollTop = terminalOutput.scrollHeight;
-              setTimeout(() => location.reload(), 1000);
-            });
-          } else {
-            // New account - create
-            if (!snap.exists()) {
-              terminalText.innerHTML += `<span style="color: #00ff88;">Creating new account...</span><br>`;
+              
+              setTimeout(() => {
+                const enteredPin = prompt(`Enter PIN for '${name}':`);
+                if (enteredPin !== userData.pin) {
+                  terminalText.innerHTML += `<span style="color: #ff4444;">Invalid PIN. Access Denied.</span><br>`;
+                  terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                  return;
+                }
+                // PIN correct, proceed with login
+                completeLogin(name, snap.exists());
+              }, 500);
             } else {
-              terminalText.innerHTML += `<span style="color: #00ff88;">Logging in...</span><br>`;
+              // No PIN set, proceed with login
+              completeLogin(name, snap.exists());
             }
-            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-            
-            localStorage.setItem("nexus_user", name);
-            window.myName = name;
-            
-            const updates = {
-              last_login: Date.now(),
-              status: "online",
-            };
-            
-            // Set initial balance if new user
-            if (!snap.exists()) {
-              updates.balance = 0;
-            }
-            
-            db.ref("users/" + name).update(updates).then(() => {
-              if (!snap.exists()) {
-                terminalText.innerHTML += `<span style="color: #00ff88;">Account created successfully! Welcome to Nexus, ${name}!</span><br>`;
-              } else {
-                terminalText.innerHTML += `<span style="color: #00ff88;">Welcome back, ${name}!</span><br>`;
-              }
-              terminalOutput.scrollTop = terminalOutput.scrollHeight;
-              setTimeout(() => location.reload(), 1500);
-            });
+          } else {
+            // New account - create without PIN
+            completeLogin(name, snap.exists());
           }
+        });
+      }
+      
+      function completeLogin(name, accountExists) {
+        const terminalText = document.getElementById("terminal-text");
+        const terminalOutput = document.getElementById("terminal-output");
+        
+        if (accountExists) {
+          terminalText.innerHTML += `<span style="color: #00ff88;">Account found. Logging in...</span><br>`;
+        } else {
+          terminalText.innerHTML += `<span style="color: #00ff88;">Creating new account...</span><br>`;
+        }
+        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        
+        localStorage.setItem("nexus_user", name);
+        window.myName = name;
+        
+        const updates = {
+          last_login: Date.now(),
+          status: "online",
+        };
+        
+        // Set initial balance if new user
+        if (!accountExists) {
+          updates.balance = 0;
+        }
+        
+        db.ref("users/" + name).update(updates).then(() => {
+          if (!accountExists) {
+            terminalText.innerHTML += `<span style="color: #00ff88;">Account created successfully! Welcome to Nexus, ${name}!</span><br>`;
+            terminalText.innerHTML += `<span style="color: var(--accent);">⚠️ Tip: Go to Security to set up a PIN for your account!</span><br>`;
+          } else {
+            terminalText.innerHTML += `<span style="color: #00ff88;">Welcome back, ${name}!</span><br>`;
+          }
+          terminalOutput.scrollTop = terminalOutput.scrollHeight;
+          setTimeout(() => location.reload(), 1500);
         });
       }
 
@@ -1623,6 +1833,146 @@
         setupMessageListeners();
         listenNotifications();
         listenPopups();
+        checkPinStatus(); // Check PIN status and update security badge
+      }
+
+      // Check PIN status and show/hide security badge
+      function checkPinStatus() {
+        if (!window.myName) return;
+        db.ref("users/" + window.myName + "/pin").on("value", (snap) => {
+          const badge = document.getElementById("security-badge");
+          if (badge) {
+            // Show badge if no PIN is set
+            badge.style.display = snap.val() ? "none" : "block";
+          }
+          // Also update security page if visible
+          updateSecurityPage(snap.val());
+        });
+      }
+
+      // Update security page UI based on PIN status
+      function updateSecurityPage(pinValue) {
+        const statusDiv = document.getElementById("pin-status");
+        const setupSection = document.getElementById("pin-setup-section");
+        const changeSection = document.getElementById("pin-change-section");
+        
+        if (!statusDiv) return; // Security page not created yet
+        
+        if (pinValue) {
+          statusDiv.innerHTML = `<span style="color: var(--online);">🔒 PIN is set</span>`;
+          statusDiv.innerHTML += `<div style="font-size: 11px; opacity: 0.7; margin-top: 5px;">Your account is protected</div>`;
+          if (setupSection) setupSection.style.display = "none";
+          if (changeSection) changeSection.style.display = "block";
+        } else {
+          statusDiv.innerHTML = `<span style="color: var(--alert);">⚠️ No PIN set</span>`;
+          statusDiv.innerHTML += `<div style="font-size: 11px; opacity: 0.7; margin-top: 5px;">Your account is not protected</div>`;
+          if (setupSection) setupSection.style.display = "block";
+          if (changeSection) changeSection.style.display = "none";
+        }
+      }
+
+      // Set new PIN
+      function setPin() {
+        const newPin = document.getElementById("new-pin-input").value;
+        const confirmPin = document.getElementById("confirm-pin-input").value;
+        const feedback = document.getElementById("pin-feedback");
+        
+        feedback.innerText = "";
+        
+        // Validate PIN
+        if (!newPin || newPin.length !== 4) {
+          feedback.innerText = "PIN must be 4 digits";
+          feedback.style.color = "var(--alert)";
+          return;
+        }
+        if (!/^\d{4}$/.test(newPin)) {
+          feedback.innerText = "PIN must contain only numbers";
+          feedback.style.color = "var(--alert)";
+          return;
+        }
+        if (newPin !== confirmPin) {
+          feedback.innerText = "PINs do not match";
+          feedback.style.color = "var(--alert)";
+          return;
+        }
+        
+        // Save PIN to Firebase
+        db.ref("users/" + window.myName + "/pin").set(newPin, (err) => {
+          if (err) {
+            feedback.innerText = "Failed to set PIN";
+            feedback.style.color = "var(--alert)";
+          } else {
+            feedback.innerText = "PIN set successfully!";
+            feedback.style.color = "var(--online)";
+            document.getElementById("new-pin-input").value = "";
+            document.getElementById("confirm-pin-input").value = "";
+          }
+        });
+      }
+
+      // Change existing PIN
+      function changePin() {
+        const currentPin = document.getElementById("current-pin-input").value;
+        const newPin = document.getElementById("new-change-pin-input").value;
+        const feedback = document.getElementById("pin-feedback");
+        
+        feedback.innerText = "";
+        
+        // Validate new PIN
+        if (!newPin || newPin.length !== 4) {
+          feedback.innerText = "New PIN must be 4 digits";
+          feedback.style.color = "var(--alert)";
+          return;
+        }
+        if (!/^\d{4}$/.test(newPin)) {
+          feedback.innerText = "PIN must contain only numbers";
+          feedback.style.color = "var(--alert)";
+          return;
+        }
+        
+        // Verify current PIN
+        db.ref("users/" + window.myName + "/pin").once("value", (snap) => {
+          const storedPin = snap.val();
+          if (currentPin !== storedPin) {
+            feedback.innerText = "Current PIN is incorrect";
+            feedback.style.color = "var(--alert)";
+            return;
+          }
+          
+          // Save new PIN
+          db.ref("users/" + window.myName + "/pin").set(newPin, (err) => {
+            if (err) {
+              feedback.innerText = "Failed to change PIN";
+              feedback.style.color = "var(--alert)";
+            } else {
+              feedback.innerText = "PIN changed successfully!";
+              feedback.style.color = "var(--online)";
+              document.getElementById("current-pin-input").value = "";
+              document.getElementById("new-change-pin-input").value = "";
+            }
+          });
+        });
+      }
+
+      // Remove PIN
+      function removePin() {
+        const feedback = document.getElementById("pin-feedback");
+        
+        if (!confirm("Are you sure you want to remove your PIN? This will make your account less secure.")) {
+          return;
+        }
+        
+        db.ref("users/" + window.myName + "/pin").remove((err) => {
+          if (err) {
+            feedback.innerText = "Failed to remove PIN";
+            feedback.style.color = "var(--alert)";
+          } else {
+            feedback.innerText = "PIN removed";
+            feedback.style.color = "var(--online)";
+            document.getElementById("current-pin-input").value = "";
+            document.getElementById("new-change-pin-input").value = "";
+          }
+        });
       }
 
       function getMutedChats() {
@@ -1929,6 +2279,47 @@
         });
       }
 
+      // ADMIN: Set user's slot machine luck multiplier
+      function setUserLuck() {
+        if (window.myName !== "dom") return;
+        const user = (document.getElementById("luck-username-input").value || "").trim().toLowerCase();
+        const luckValue = parseFloat(document.getElementById("luck-value-input").value);
+        const fb = document.getElementById("luck-feedback");
+        fb.innerText = "";
+        
+        if (!user) { fb.innerText = "Enter a username."; return; }
+        if (isNaN(luckValue) || luckValue < 0.1 || luckValue > 10) { 
+          fb.innerText = "Enter a luck value between 0.1 and 10."; 
+          return; 
+        }
+        
+        db.ref("users/" + user).once("value", (snap) => {
+          if (!snap.exists()) {
+            fb.innerText = "User not found.";
+            return;
+          }
+          
+          db.ref("users/" + user + "/luck").set(luckValue, (err) => {
+            if (err) {
+              fb.innerText = "Failed to set luck.";
+              return;
+            }
+            
+            // Push notification to user
+            db.ref("notifications/" + user).push({
+              text: `Your slot luck has been set to ${luckValue}x!`,
+              from: "dom",
+              timestamp: Date.now()
+            });
+            
+            fb.innerText = `Set ${user}'s luck to ${luckValue}x.`;
+            fb.style.color = "var(--online)";
+            document.getElementById("luck-username-input").value = "";
+            document.getElementById("luck-value-input").value = "1";
+          });
+        });
+      }
+
       // ADMIN: trigger image popup for a user or everyone online
       function triggerImagePopup() {
         if (window.myName !== "dom") return;
@@ -2165,6 +2556,14 @@
         if (!activeChat || !inp.value.trim()) return;
 
         const text = inp.value;
+        
+        // Character limit check
+        const MAX_LENGTH = 212;
+        if (text.length > MAX_LENGTH) {
+          alert(`Message too long! Maximum ${MAX_LENGTH} characters allowed.`);
+          return;
+        }
+        
         inp.value = "";
 
         const chatId =
@@ -2516,15 +2915,54 @@ function tab(id) {
         const isMe = d.sender === window.myName;
         const div = document.createElement("div");
         div.className = `msg ${isMe ? "user" : "other"}`;
+        div.dataset.msgId = key;
+
+        // Check for @mentions and format them
+        let messageText = d.text || "";
+        let mentionFound = false;
+        
+        // Parse @mentions and make them blue and clickable
+        messageText = messageText.replace(/@([a-zA-Z0-9_]+)/g, (match, username) => {
+          if (username.toLowerCase() === window.myName) {
+            mentionFound = true;
+          }
+          return `<span class="mention" onclick="viewProfile('${username}')" style="color: #00008B; cursor: pointer; font-weight: bold;">${match}</span>`;
+        });
+
+        // Play notification sound if mentioned
+        if (mentionFound && d.sender !== window.myName) {
+          playMentionSound();
+          showMentionNotification(d.sender, d.text);
+        }
+
+        // Build reply HTML if this is a reply
+        let replyHtml = "";
+        if (d.replyTo) {
+          replyHtml = `
+            <div class="reply-preview" style="font-size: 10px; opacity: 0.7; margin-bottom: 4px; padding: 4px; border-left: 2px solid var(--accent); background: rgba(0,242,255,0.1);">
+              Replying to ${d.replyTo.sender}: ${d.replyTo.text.substring(0, 30)}${d.replyTo.text.length > 30 ? "..." : ""}
+            </div>
+          `;
+        }
+
+        // Reply button (visible on hover for non-system messages)
+        const replyButton = `
+          <button class="reply-btn" onclick="startReply('${key}', '${d.sender}', '${(d.text || "").replace(/'/g, "\\'")}')" style="position: absolute; right: -25px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--accent); cursor: pointer; opacity: 0; transition: opacity 0.2s; font-size: 14px;" title="Reply">
+            ↩
+          </button>
+        `;
 
         if (!isMe) {
+          div.style.position = "relative";
           div.innerHTML = `
             <img class="chat-pfp-trigger" id="msg-pfp-${key}" src="https://via.placeholder.com/24"
               onclick="viewProfile('${d.sender}')">
             <span style="color:var(--accent); font-weight:bold; display:block; font-size:10px;">
               ${d.sender}
             </span>
-            ${d.text}
+            ${replyHtml}
+            ${messageText}
+            ${replyButton}
           `;
 
           db.ref("users/" + d.sender + "/pfp").once("value", (pSnap) => {
@@ -2532,16 +2970,121 @@ function tab(id) {
             if (img && pSnap.val()) img.src = pSnap.val();
           });
         } else {
+          div.style.position = "relative";
           div.innerHTML = `
-            ${d.text}
+            ${replyHtml}
+            ${messageText}
             <div style="font-size:10px; opacity:0.6; text-align:right; margin-top:3px;">
               ${d.seen && Object.keys(d.seen).length > 1 ? "Seen" : "Sent"}
             </div>
+            ${replyButton}
           `;
         }
 
+        // Show reply button on hover
+        div.addEventListener("mouseenter", () => {
+          const btn = div.querySelector(".reply-btn");
+          if (btn) btn.style.opacity = "1";
+        });
+        div.addEventListener("mouseleave", () => {
+          const btn = div.querySelector(".reply-btn");
+          if (btn) btn.style.opacity = "0";
+        });
+
         box.appendChild(div);
       }
+
+      // Reply functionality
+      let currentReply = null;
+
+      function startReply(msgId, sender, text) {
+        currentReply = { msgId, sender, text };
+        const inputId = activeChat === "water" ? "water-chat-input" : "chat-input";
+        const input = document.getElementById(inputId);
+        
+        // Show reply preview above input
+        let replyPreview = document.getElementById("reply-preview");
+        if (!replyPreview) {
+          replyPreview = document.createElement("div");
+          replyPreview.id = "reply-preview";
+          replyPreview.style.cssText = "background: rgba(0,242,255,0.1); padding: 8px; margin-bottom: 8px; border-radius: 4px; font-size: 12px; display: flex; justify-content: space-between; align-items: center;";
+          input.parentElement.insertBefore(replyPreview, input);
+        }
+        
+        replyPreview.innerHTML = `
+          <span>Replying to ${sender}: ${text.substring(0, 40)}${text.length > 40 ? "..." : ""}</span>
+          <button onclick="cancelReply()" style="background: none; border: none; color: var(--alert); cursor: pointer; font-size: 14px;">✕</button>
+        `;
+        replyPreview.style.display = "flex";
+        
+        input.focus();
+      }
+
+      function cancelReply() {
+        currentReply = null;
+        const replyPreview = document.getElementById("reply-preview");
+        if (replyPreview) replyPreview.style.display = "none";
+      }
+
+      // Play mention notification sound
+      function playMentionSound() {
+        try {
+          const audio = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTijMGHm7A7+OZSA0PVanu8LdnHgU2k9n1unEiBCuBzvXWiTYJHGm98+OZ");
+          audio.volume = 0.5;
+          audio.play().catch(() => {});
+        } catch (e) {}
+      }
+
+      // Show mention notification
+      function showMentionNotification(sender, text) {
+        const notif = document.getElementById("message-notification");
+        if (notif) {
+          notif.innerHTML = `<strong>${sender} mentioned you!</strong><br><small>${text.substring(0, 50)}${text.length > 50 ? "..." : ""}</small>`;
+          notif.classList.add("show");
+          setTimeout(() => notif.classList.remove("show"), 5000);
+        }
+      }
+
+      // Update sendMsg to include reply info
+      const originalSendMsg = sendMsg;
+      sendMsg = function(source) {
+        const inputId = source === "water" ? "water-chat-input" : "chat-input";
+        const inp = document.getElementById(inputId);
+        if (!activeChat || !inp.value.trim()) return;
+
+        const text = inp.value;
+        
+        // Character limit check
+        const MAX_LENGTH = 212;
+        if (text.length > MAX_LENGTH) {
+          alert(`Message too long! Maximum ${MAX_LENGTH} characters allowed.`);
+          return;
+        }
+        
+        inp.value = "";
+
+        const chatId =
+          chatType === "global"
+            ? "GLOBAL_CHAT"
+            : chatType === "group"
+            ? activeChat
+            : [window.myName, activeChat].sort().join("_");
+            
+        const messageData = {
+          sender: window.myName,
+          text,
+          timestamp: Date.now(),
+          seen: { [window.myName]: true },
+        };
+        
+        // Add reply info if replying
+        if (currentReply) {
+          messageData.replyTo = currentReply;
+          cancelReply();
+        }
+            
+        db.ref("messages/" + chatId).push(messageData);
+      };
 
       function markMessagesSeen(chatId) {
         db.ref("messages/" + chatId)
@@ -2606,7 +3149,8 @@ function tab(id) {
           const users = [];
           snap.forEach((child) => {
             const userData = child.val();
-            if (userData.balance && child.key !== "dom") {
+            // Exclude users with > 50,000 coins and dom
+            if (userData.balance && child.key !== "dom" && userData.balance <= 50000) {
               users.push({ name: child.key, credits: userData.balance });
             }
           });
@@ -2633,9 +3177,9 @@ function tab(id) {
             `;
             container.appendChild(div);
             
-            // Award leaderboard background to top 5
+            // Award winner.png skin to top 5
             if (index < 5) {
-              awardLeaderboardBackground(user.name);
+              awardWinnerSkin(user.name);
             }
           });
         });
@@ -2679,9 +3223,9 @@ function tab(id) {
             `;
             container.appendChild(div);
             
-            // Award leaderboard background to top 5
+            // Award winner.png skin to top 5
             if (index < 5) {
-              awardLeaderboardBackground(user.name);
+              awardWinnerSkin(user.name);
             }
           });
         });
@@ -2715,23 +3259,20 @@ function tab(id) {
             `;
             container.appendChild(div);
             
-            // Award leaderboard background to top 5
+            // Award winner.png skin to top 5
             if (index < 5) {
-              awardLeaderboardBackground(user.name);
+              awardWinnerSkin(user.name);
             }
           });
         });
       }
       
-      function awardLeaderboardBackground(username) {
-        const leaderboardBg = "";
-        
-        if (!leaderboardBg) return; // Skip if no background URL
-        
-        db.ref("users/" + username + "/inventory/leaderboard_background").set(true).then(() => {
-          console.log(`Awarded leaderboard background to ${username}`);
+      function awardWinnerSkin(username) {
+        // Award the winner.png skin to top 5 leaderboard users
+        db.ref("users/" + username + "/inventory/winner.png").set(true).then(() => {
+          console.log(`Awarded winner.png skin to ${username}`);
         }).catch((error) => {
-          console.error("Failed to award leaderboard background:", error);
+          console.error("Failed to award winner.png skin:", error);
         });
       }
       
@@ -2751,6 +3292,242 @@ function tab(id) {
           }
         }
       };
+      
+      // --- SLOT MACHINE FUNCTIONS ---
+      const slotSymbols = ['💎', '🍀', '7️⃣', '🎰', '💰', '⭐', '🎯', '🔥'];
+      let freeSpinning = false;
+      let betSpinning = false;
+      let userLuck = 1; // Default luck multiplier (1 = normal)
+      
+      // Load user's luck from Firebase
+      function loadUserLuck() {
+        if (!window.myName) return;
+        db.ref('users/' + window.myName + '/luck').on('value', (snap) => {
+          userLuck = snap.val() || 1;
+        });
+      }
+      
+      function getRandomSymbol() {
+        return slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+      }
+      
+      // Weighted random for free slot with higher win chance
+      function getFreeSlotSymbols() {
+        // 40% base chance to win, multiplied by user luck
+        const winChance = Math.min(0.4 * userLuck, 0.8); // Cap at 80%
+        
+        if (Math.random() < winChance) {
+          // Force a win - all three match
+          const winningSymbol = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+          return [winningSymbol, winningSymbol, winningSymbol];
+        } else {
+          // Random but ensure they don't all match
+          let symbols;
+          do {
+            symbols = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
+          } while (symbols[0] === symbols[1] && symbols[1] === symbols[2]);
+          return symbols;
+        }
+      }
+      
+      // Weighted random for betting slot with normal win chance + luck bonus
+      function getBetSlotSymbols() {
+        // 25% base chance to win, multiplied by user luck
+        const winChance = Math.min(0.25 * userLuck, 0.7); // Cap at 70%
+        
+        if (Math.random() < winChance) {
+          // Force a win - all three match
+          const winningSymbol = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+          return [winningSymbol, winningSymbol, winningSymbol];
+        } else {
+          // Random but ensure they don't all match
+          let symbols;
+          do {
+            symbols = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
+          } while (symbols[0] === symbols[1] && symbols[1] === symbols[2]);
+          return symbols;
+        }
+      }
+      
+      function spinFreeSlot() {
+        if (freeSpinning) return;
+        freeSpinning = true;
+        
+        const btn = document.getElementById('free-spin-btn');
+        const result = document.getElementById('free-result');
+        const reels = [
+          document.getElementById('free-reel-1'),
+          document.getElementById('free-reel-2'),
+          document.getElementById('free-reel-3')
+        ];
+        const display = document.getElementById('free-slot-display');
+        
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        result.textContent = '';
+        display.classList.remove('win');
+        reels.forEach(r => r.classList.remove('win'));
+        
+        // Get predetermined result with weighted odds
+        const finalSymbols = getFreeSlotSymbols();
+        
+        // Spin animation
+        let spins = 0;
+        const maxSpins = 20;
+        const interval = setInterval(() => {
+          reels.forEach(reel => {
+            reel.textContent = getRandomSymbol();
+            reel.classList.add('spinning');
+          });
+          spins++;
+          
+          if (spins >= maxSpins) {
+            clearInterval(interval);
+            reels.forEach(r => r.classList.remove('spinning'));
+            
+            // Set final predetermined result
+            reels.forEach((reel, index) => {
+              reel.textContent = finalSymbols[index];
+            });
+            
+            // Check if all match (win)
+            const allMatch = finalSymbols.every(s => s === finalSymbols[0]);
+            
+            if (allMatch) {
+              result.innerHTML = '<span style="color: var(--accent);">✨ PRACTICE WIN! ✨</span>';
+              display.classList.add('win');
+              reels.forEach(r => r.classList.add('win'));
+            } else {
+              result.textContent = 'Try again!';
+            }
+            
+            freeSpinning = false;
+            btn.disabled = false;
+            btn.style.opacity = '1';
+          }
+        }, 100);
+      }
+      
+      // Update bet display when input changes - attach when gambling tab is opened
+      function attachBetListener() {
+        const betInput = document.getElementById('bet-amount');
+        if (betInput && !betInput.dataset.listenerAttached) {
+          betInput.addEventListener('input', function() {
+            document.getElementById('current-bet').textContent = this.value;
+          });
+          betInput.dataset.listenerAttached = 'true';
+        }
+      }
+      
+      function spinBetSlot() {
+        if (betSpinning) return;
+        
+        const betAmount = parseInt(document.getElementById('bet-amount').value) || 100;
+        if (betAmount < 10) {
+          alert('Minimum bet is 10 credits');
+          return;
+        }
+        if (betAmount > myBalance) {
+          alert('Insufficient credits!');
+          return;
+        }
+        
+        betSpinning = true;
+        
+        const btn = document.getElementById('bet-spin-btn');
+        const result = document.getElementById('bet-result');
+        const reels = [
+          document.getElementById('bet-reel-1'),
+          document.getElementById('bet-reel-2'),
+          document.getElementById('bet-reel-3')
+        ];
+        const display = document.getElementById('bet-slot-display');
+        
+        // Deduct bet
+        myBalance -= betAmount;
+        db.ref('users/' + window.myName + '/balance').set(myBalance);
+        
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        result.textContent = '';
+        display.classList.remove('win');
+        reels.forEach(r => r.classList.remove('win'));
+        
+        // Get predetermined result with weighted odds
+        const finalSymbols = getBetSlotSymbols();
+        
+        // Spin animation
+        let spins = 0;
+        const maxSpins = 20;
+        const interval = setInterval(() => {
+          reels.forEach(reel => {
+            reel.textContent = getRandomSymbol();
+            reel.classList.add('spinning');
+          });
+          spins++;
+          
+          if (spins >= maxSpins) {
+            clearInterval(interval);
+            reels.forEach(r => r.classList.remove('spinning'));
+            
+            // Set final predetermined result
+            reels.forEach((reel, index) => {
+              reel.textContent = finalSymbols[index];
+            });
+            
+            // Check win
+            const allMatch = finalSymbols.every(s => s === finalSymbols[0]);
+            const symbol = finalSymbols[0];
+            
+            let winnings = 0;
+            let winText = '';
+            
+            if (allMatch) {
+              if (symbol === '💎') {
+                winnings = betAmount * 3;
+                winText = `💎💎💎 TRIPLE WIN! +${winnings} credits!`;
+              } else if (symbol === '🍀') {
+                winnings = betAmount * 2;
+                winText = `🍀🍀🍀 DOUBLE WIN! +${winnings} credits!`;
+              } else if (symbol === '7️⃣') {
+                winnings = betAmount * 5;
+                winText = `7️⃣7️⃣7️⃣ JACKPOT! +${winnings} credits!`;
+              } else {
+                winnings = betAmount * 2;
+                winText = `Matched! +${winnings} credits!`;
+              }
+              
+              // Add winnings
+              myBalance += winnings;
+              db.ref('users/' + window.myName + '/balance').set(myBalance);
+              
+              result.innerHTML = `<span style="color: var(--online); font-weight: bold;">${winText}</span>`;
+              display.classList.add('win');
+              reels.forEach(r => r.classList.add('win'));
+              
+              // Show money popup
+              showMoneyPopup(winnings);
+            } else {
+              result.innerHTML = `<span style="color: var(--alert);">You lost ${betAmount} credits. Try again!</span>`;
+            }
+            
+            betSpinning = false;
+            btn.disabled = false;
+            btn.style.opacity = '1';
+          }
+        }, 100);
+      }
+      
+      function showMoneyPopup(amount) {
+        const popup = document.getElementById('money-pop');
+        if (popup) {
+          popup.textContent = `+${amount} credits!`;
+          popup.style.display = 'block';
+          setTimeout(() => {
+            popup.style.display = 'none';
+          }, 2000);
+        }
+      }
     </script>
   </body>
 </html>
