@@ -1342,6 +1342,38 @@
         </div>
         <button class="nexus-btn" onclick="setUserLuck()" style="width: auto; padding: 10px 25px;">Set Luck</button>
         <div id="luck-feedback" style="margin-top: 12px; font-size: 13px; color: var(--accent); min-height: 20px;"></div>
+        
+        <h2 style="letter-spacing: 2px; margin: 40px 0 20px;">manage user tags</h2>
+        <input
+          type="text"
+          id="tag-username-input"
+          class="nexus-input"
+          style="max-width: 300px; margin-bottom: 10px;"
+          placeholder="Enter username"
+          onkeydown="if(event.key==='Enter') setUserTag()"
+        />
+        <input
+          type="text"
+          id="tag-name-input"
+          class="nexus-input"
+          style="max-width: 200px; margin-bottom: 10px;"
+          placeholder="Tag name (e.g. OWNER)"
+        />
+        <input
+          type="color"
+          id="tag-color-input"
+          class="nexus-input"
+          style="max-width: 100px; margin-bottom: 10px; padding: 5px; height: 40px;"
+          value="#ff0000"
+          title="Tag color"
+        />
+        <div style="font-size: 11px; opacity: 0.7; margin-bottom: 10px; max-width: 300px; text-align: center;">
+          'dom' automatically has OWNER tag in red<br>
+          Leave tag name empty to remove tag
+        </div>
+        <button class="nexus-btn" onclick="setUserTag()" style="width: auto; padding: 10px 25px;">Set Tag</button>
+        <button class="nexus-btn" onclick="removeUserTag()" style="width: auto; padding: 10px 25px; background: transparent; border-color: var(--alert); color: var(--alert); margin-left: 10px;">Remove Tag</button>
+        <div id="tag-feedback" style="margin-top: 12px; font-size: 13px; color: var(--accent); min-height: 20px;"></div>
       </div>
 
       <div id="profile" class="view">
@@ -1371,6 +1403,7 @@
                 margin-bottom: 5px;
               "
             ></h2>
+            <div id="display-tag" style="margin-bottom: 10px; display: none;"></div>
             <div style="display: flex; align-items: center; gap: 5px">
               <div id="status-dot" class="dot"></div>
               <span
@@ -2320,6 +2353,83 @@
         });
       }
 
+      // ADMIN: Set user tag
+      function setUserTag() {
+        if (window.myName !== "dom") return;
+        const user = (document.getElementById("tag-username-input").value || "").trim().toLowerCase();
+        const tagName = (document.getElementById("tag-name-input").value || "").trim().toUpperCase();
+        const tagColor = document.getElementById("tag-color-input").value;
+        const fb = document.getElementById("tag-feedback");
+        fb.innerText = "";
+        
+        if (!user) { fb.innerText = "Enter a username."; fb.style.color = "var(--alert)"; return; }
+        if (!tagName) { fb.innerText = "Enter a tag name."; fb.style.color = "var(--alert)"; return; }
+        
+        db.ref("users/" + user).once("value", (snap) => {
+          if (!snap.exists()) {
+            fb.innerText = "User not found.";
+            fb.style.color = "var(--alert)";
+            return;
+          }
+          
+          const tagData = {
+            name: tagName,
+            color: tagColor
+          };
+          
+          db.ref("users/" + user + "/tag").set(tagData, (err) => {
+            if (err) {
+              fb.innerText = "Failed to set tag.";
+              fb.style.color = "var(--alert)";
+              return;
+            }
+            
+            // Push notification to user
+            db.ref("notifications/" + user).push({
+              text: `You have been given the ${tagName} tag!`,
+              from: "dom",
+              timestamp: Date.now()
+            });
+            
+            fb.innerText = `Set ${user}'s tag to ${tagName}.`;
+            fb.style.color = "var(--online)";
+            document.getElementById("tag-username-input").value = "";
+            document.getElementById("tag-name-input").value = "";
+          });
+        });
+      }
+
+      // ADMIN: Remove user tag
+      function removeUserTag() {
+        if (window.myName !== "dom") return;
+        const user = (document.getElementById("tag-username-input").value || "").trim().toLowerCase();
+        const fb = document.getElementById("tag-feedback");
+        fb.innerText = "";
+        
+        if (!user) { fb.innerText = "Enter a username."; fb.style.color = "var(--alert)"; return; }
+        
+        db.ref("users/" + user + "/tag").remove((err) => {
+          if (err) {
+            fb.innerText = "Failed to remove tag.";
+            fb.style.color = "var(--alert)";
+            return;
+          }
+          
+          fb.innerText = `Removed ${user}'s tag.`;
+          fb.style.color = "var(--online)";
+          document.getElementById("tag-username-input").value = "";
+          document.getElementById("tag-name-input").value = "";
+        });
+      }
+
+      // Get user tag (dom always has OWNER in red)
+      function getUserTag(username) {
+        if (username === "dom") {
+          return { name: "OWNER", color: "#ff0000" };
+        }
+        return null;
+      }
+
       // ADMIN: trigger image popup for a user or everyone online
       function triggerImagePopup() {
         if (window.myName !== "dom") return;
@@ -2841,6 +2951,19 @@
       document.getElementById("status-text").style.color = isOnline
         ? "var(--online)"
         : "var(--offline)";
+      
+      // Display user tag (dom always has OWNER in red)
+      const tagContainer = document.getElementById("display-tag");
+      let userTag = getUserTag(username);
+      if (!userTag && data.tag) {
+        userTag = data.tag;
+      }
+      if (userTag) {
+        tagContainer.innerHTML = `<span style="background: ${userTag.color}; color: white; padding: 3px 10px; border-radius: 4px; font-size: 11px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">${userTag.name}</span>`;
+        tagContainer.style.display = "block";
+      } else {
+        tagContainer.style.display = "none";
+      }
     }
   });
 }
@@ -2954,11 +3077,16 @@ function tab(id) {
 
         if (!isMe) {
           div.style.position = "relative";
+          // Get tag for the sender (dom always has OWNER)
+          const senderTag = getUserTag(d.sender) || d.senderTag;
+          const tagHtml = senderTag ? 
+            `<span style="background: ${senderTag.color}; color: white; padding: 1px 6px; border-radius: 3px; font-size: 9px; margin-left: 5px; text-transform: uppercase;">${senderTag.name}</span>` : 
+            '';
           div.innerHTML = `
             <img class="chat-pfp-trigger" id="msg-pfp-${key}" src="https://via.placeholder.com/24"
               onclick="viewProfile('${d.sender}')">
             <span style="color:var(--accent); font-weight:bold; display:block; font-size:10px;">
-              ${d.sender}
+              ${d.sender}${tagHtml}
             </span>
             ${replyHtml}
             ${messageText}
@@ -2969,9 +3097,33 @@ function tab(id) {
             const img = document.getElementById(`msg-pfp-${key}`);
             if (img && pSnap.val()) img.src = pSnap.val();
           });
+          
+          // Load tag from Firebase if not dom
+          if (d.sender !== "dom") {
+            db.ref("users/" + d.sender + "/tag").once("value", (tSnap) => {
+              const tag = tSnap.val();
+              if (tag) {
+                const senderSpan = div.querySelector("span");
+                if (senderSpan && !senderSpan.querySelector("span")) {
+                  const tagSpan = document.createElement("span");
+                  tagSpan.style.cssText = `background: ${tag.color}; color: white; padding: 1px 6px; border-radius: 3px; font-size: 9px; margin-left: 5px; text-transform: uppercase;`;
+                  tagSpan.innerText = tag.name;
+                  senderSpan.appendChild(tagSpan);
+                }
+              }
+            });
+          }
         } else {
           div.style.position = "relative";
+          // Get my tag (dom always has OWNER)
+          const myTag = getUserTag(window.myName);
+          const tagHtml = myTag ? 
+            `<span style="background: ${myTag.color}; color: white; padding: 1px 6px; border-radius: 3px; font-size: 9px; margin-left: 5px; text-transform: uppercase;">${myTag.name}</span>` : 
+            '';
           div.innerHTML = `
+            <div style="font-size:10px; opacity:0.6; text-align:right; margin-bottom:3px;">
+              ${window.myName}${tagHtml}
+            </div>
             ${replyHtml}
             ${messageText}
             <div style="font-size:10px; opacity:0.6; text-align:right; margin-top:3px;">
@@ -2979,6 +3131,22 @@ function tab(id) {
             </div>
             ${replyButton}
           `;
+          
+          // Load tag from Firebase if not dom
+          if (window.myName !== "dom") {
+            db.ref("users/" + window.myName + "/tag").once("value", (tSnap) => {
+              const tag = tSnap.val();
+              if (tag) {
+                const nameDiv = div.querySelector("div");
+                if (nameDiv && !nameDiv.querySelector("span")) {
+                  const tagSpan = document.createElement("span");
+                  tagSpan.style.cssText = `background: ${tag.color}; color: white; padding: 1px 6px; border-radius: 3px; font-size: 9px; margin-left: 5px; text-transform: uppercase;`;
+                  tagSpan.innerText = tag.name;
+                  nameDiv.appendChild(tagSpan);
+                }
+              }
+            });
+          }
         }
 
         // Show reply button on hover
