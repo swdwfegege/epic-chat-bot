@@ -808,6 +808,7 @@
         <div class="nav-item" onclick="tab('shop')">shop</div>
         <div class="nav-item" onclick="tab('inventory')">inventory</div>
         <div class="nav-item" onclick="tab('leaderboards')">leaderboards</div>
+        <div class="nav-item" onclick="tab('games')">games</div>
         <div class="nav-item" onclick="tab('gambling')">gambling</div>
         <div class="nav-item" onclick="tab('security')">security <span id="security-badge" class="badge" style="display: none;">!</span></div>
         <div id="nav-admin" class="nav-item" onclick="tab('admin')" style="display: none;">admin</div>
@@ -1074,6 +1075,73 @@
           <div style="background: var(--glass); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
             <h3 style="color: var(--accent); margin-top: 0; text-align: center; letter-spacing: 2px;">🎨 Most Backgrounds</h3>
             <div id="backgrounds-leaderboard" style="display: flex; flex-direction: column; gap: 10px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="games" class="view" style="flex-direction: column; height: 100%; padding: 0; overflow: hidden;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--glass); border-bottom: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <button class="nexus-btn" onclick="returnToGamesSelection()" style="width: auto; padding: 8px 15px; font-size: 12px;">
+              ← Back
+            </button>
+            <span style="font-size: 16px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent);">games</span>
+          </div>
+        </div>
+        
+        <div id="game-content" style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 40px; overflow-y: auto;">
+          <h2 style="letter-spacing: 3px; margin-bottom: 30px;">select a game</h2>
+          <div id="games-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; width: 100%; max-width: 1000px;">
+            <!-- Game 1 -->
+            <div style="background: var(--glass); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s; cursor: pointer;">
+              <div style="height: 150px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                <span style="font-size: 48px;">retro bowl</span>
+              </div>
+              <div style="padding: 15px; flex: 1; display: flex; flex-direction: column;">
+                <h3 style="margin: 0 0 10px 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">retro bowl</h3>
+                <button class="nexus-btn" onclick="launchGame('retro bowl', 'Retro Bowl', 'Retro Bowl.html')" style="width: 100%; margin-top: auto; padding: 10px; font-size: 12px;">
+                  ▶ Play
+                </button>
+              </div>
+            </div>
+            
+            <!-- Game 2 -->
+            <div style="background: var(--glass); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s; cursor: pointer;">
+              <div style="height: 150px; background: linear-gradient(135deg, #2e1a2e 0%, #1e1621 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                <span style="font-size: 48px;">stein</span>
+              </div>
+              <div style="padding: 15px; flex: 1; display: flex; flex-direction: column;">
+                <h3 style="margin: 0 0 10px 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">5 nights at the steins</h3>
+                <button class="nexus-btn" onclick="launchGame('game2', 'Game 2', 'stein.html')" style="width: 100%; margin-top: auto; padding: 10px; font-size: 12px;">
+                  ▶ Play
+                </button>
+              </div>
+            </div>
+            
+            <!-- Game 3 -->
+            <div style="background: var(--glass); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s; cursor: pointer;">
+              <div style="height: 150px; background: linear-gradient(135deg, #1e2e1e 0%, #162116 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                <span style="font-size: 48px;">buster</span>
+              </div>
+              <div style="padding: 15px; flex: 1; display: flex; flex-direction: column;">
+                <h3 style="margin: 0 0 10px 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">buster jam</h3>
+                <button class="nexus-btn" onclick="launchGame('game3', 'Game 3', 'Buster Jam.html')" style="width: 100%; margin-top: auto; padding: 10px; font-size: 12px;">
+                  ▶ Play
+                </button>
+              </div>
+            </div>
+                        <!-- Game 4 -->
+                        <div style="background: var(--glass); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s; cursor: pointer;">
+                          <div style="height: 150px; background: linear-gradient(135deg, #2e1a2e 0%, #1e1621 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                            <span style="font-size: 48px;">crazy cattle 3d</span>
+                          </div>
+                          <div style="padding: 15px; flex: 1; display: flex; flex-direction: column;">
+                            <h3 style="margin: 0 0 10px 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">crazy cattle</h3>
+                            <button class="nexus-btn" onclick="launchGame('game2', 'Game 2', 'Crazy Cattle 3D.html')" style="width: 100%; margin-top: auto; padding: 10px; font-size: 12px;">
+                              ▶ Play
+                            </button>
+                          </div>
+                        </div>
           </div>
         </div>
       </div>
@@ -3450,6 +3518,14 @@ function tab(id) {
       tab = function(id) {
         originalTab(id);
         
+        if (id === 'admin') {
+          loadAdminGamesList();
+        }
+        
+        if (id === 'games') {
+          loadGames();
+        }  
+        
         if (id === 'leaderboards') {
           updateLeaderboards();
           if (leaderboardInterval) clearInterval(leaderboardInterval);
@@ -3696,6 +3772,97 @@ function tab(id) {
             popup.style.display = 'none';
           }, 2000);
         }
+      }
+      
+      // Play a game
+      function launchGame(gameId, gameName, gameUrl) {
+        // Load game in same tab
+        const gameContent = document.getElementById('game-content');
+        
+        // Hide game selection, show game
+        gameContent.style.display = 'none';
+        
+        // Create game iframe
+        const gameFrame = document.createElement('iframe');
+        gameFrame.src = gameUrl;
+        gameFrame.style.cssText = 'width: 100%; height: 100%; border: none; background: #000;';
+        
+        // Add game to content area
+        gameContent.innerHTML = '';
+        gameContent.appendChild(gameFrame);
+        gameContent.style.display = 'flex';
+        
+        // Update header
+        document.querySelector('#games span').textContent = gameName;
+      }
+      
+      // Return to games selection
+      function returnToGamesSelection() {
+        const gameContent = document.getElementById('game-content');
+        
+        // Hide game, show game selection
+        gameContent.style.display = 'none';
+        
+        // Restore game selection
+        gameContent.innerHTML = `
+          <h2 style="letter-spacing: 3px; margin-bottom: 30px;">select a game</h2>
+          <div id="games-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; width: 100%; max-width: 1000px;">
+            <!-- retro bowl -->
+            <div style="background: var(--glass); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s; cursor: pointer;">
+              <div style="height: 150px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                <span style="font-size: 48px;">retro</span>
+              </div>
+              <div style="padding: 15px; flex: 1; display: flex; flex-direction: column;">
+                <h3 style="margin: 0 0 10px 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">retro</h3>
+                <button class="nexus-btn" onclick="launchGame('retro bowl', 'retro bowl', 'Retro Bowl.html')" style="width: 100%; margin-top: auto; padding: 10px; font-size: 12px;">
+                  ▶ Play
+                </button>
+              </div>
+            </div>
+            
+            <!-- Game 2 -->
+            <div style="background: var(--glass); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s; cursor: pointer;">
+              <div style="height: 150px; background: linear-gradient(135deg, #2e1a2e 0%, #1e1621 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                <span style="font-size: 48px;">epstein</span>
+              </div>
+              <div style="padding: 15px; flex: 1; display: flex; flex-direction: column;">
+                <h3 style="margin: 0 0 10px 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">stein island</h3>
+                <button class="nexus-btn" onclick="launchGame('game2', 'Game 2', 'stein.html')" style="width: 100%; margin-top: auto; padding: 10px; font-size: 12px;">
+                  ▶ Play
+                </button>
+              </div>
+            </div>
+            
+            <!-- Game 3 -->
+            <div style="background: var(--glass); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s; cursor: pointer;">
+              <div style="height: 150px; background: linear-gradient(135deg, #1e2e1e 0%, #162116 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                <span style="font-size: 48px;">buster</span>
+              </div>
+              <div style="padding: 15px; flex: 1; display: flex; flex-direction: column;">
+                <h3 style="margin: 0 0 10px 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">buster jam</h3>
+                <button class="nexus-btn" onclick="launchGame('game3', 'Game 3', 'Buster Jam.html')" style="width: 100%; margin-top: auto; padding: 10px; font-size: 12px;">
+                  ▶ Play
+                </button>
+              </div>
+            </div>
+            <!-- Game 4 -->
+            <div style="background: var(--glass); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s; cursor: pointer;">
+              <div style="height: 150px; background: linear-gradient(135deg, #2e1a2e 0%, #1e1621 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                <span style="font-size: 48px;">cattle</span>
+              </div>
+              <div style="padding: 15px; flex: 1; display: flex; flex-direction: column;">
+                <h3 style="margin: 0 0 10px 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">crazy cattle</h3>
+                <button class="nexus-btn" onclick="launchGame('game2', 'Game 2', 'Crazy Cattle 3D.html')" style="width: 100%; margin-top: auto; padding: 10px; font-size: 12px;">
+                  ▶ Play
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        gameContent.style.display = 'flex';
+        
+        // Update header
+        document.querySelector('#games span').textContent = 'games';
       }
     </script>
   </body>
