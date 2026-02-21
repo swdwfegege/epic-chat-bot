@@ -588,6 +588,7 @@
       }
     </style>
   </head>
+
   <body onload="init()">
     <div id="money-pop">+1 Nexus Credit</div>
 <body onload="init()">
@@ -608,6 +609,39 @@
     </div>
     <div id="image-popup-flash"></div>
     <div id="message-notification">you have a message</div>
+    <div id="gif-modal" style="display:none;position:fixed;inset:0;z-index:10005;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);" onclick="if(event.target===this)closeGifModal()">
+      <div style="background:#0a0a0a;border:1px solid rgba(255,255,255,0.1);border-radius:12px;width:500px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">
+        <div style="padding:15px 18px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:10px;">
+          <span style="font-size:20px;">🎬</span>
+          <input
+            type="text"
+            id="gif-search-input"
+            placeholder="Search GIFs..."
+            style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:white;padding:8px 12px;border-radius:6px;outline:none;font-size:13px;"
+            onkeydown="if(event.key==='Enter')searchGifs()"
+          />
+          <button class="nexus-btn" onclick="searchGifs()" style="width:auto;padding:8px 14px;font-size:11px;">Search</button>
+          <span onclick="closeGifModal()" style="cursor:pointer;opacity:0.5;font-size:20px;line-height:1;margin-left:4px;">✕</span>
+        </div>
+        <div id="gif-results" style="flex:1;overflow-y:auto;padding:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;min-height:200px;">
+          <div id="gif-placeholder" style="grid-column:1/-1;text-align:center;opacity:0.4;padding:40px;font-size:13px;">Search for a GIF above</div>
+        </div>
+        <div id="gif-loading" style="display:none;text-align:center;padding:20px;opacity:0.5;font-size:12px;">Loading...</div>
+      </div>
+    </div>
+    <div id="members-panel" style="position:fixed;top:0;right:-320px;width:300px;height:100vh;background:#050505;border-left:1px solid rgba(255,255,255,0.1);z-index:9999;display:flex;flex-direction:column;transition:right 0.3s ease;">
+      <div style="padding:15px 20px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;">
+        <span id="members-panel-title" style="font-size:11px;color:#00f2ff;letter-spacing:2px;">MEMBERS</span>
+        <span onclick="closeMembersPanel()" style="cursor:pointer;opacity:0.5;font-size:18px;line-height:1;">✕</span>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:10px;">
+        <div style="font-size:9px;color:#00ff88;letter-spacing:2px;margin:8px 0 6px 4px;">ONLINE</div>
+        <div id="members-online-list"></div>
+        <div style="font-size:9px;color:#555;letter-spacing:2px;margin:14px 0 6px 4px;">OFFLINE</div>
+        <div id="members-offline-list"></div>
+      </div>
+    </div>
+    <div id="members-panel-backdrop" onclick="closeMembersPanel()" style="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9998;display:none;"></div>
     <div id="manage-group-modal" onclick="if(event.target===this) closeManageGroupModal()">
       <div class="manage-group-content" onclick="event.stopPropagation()">
         <h3 style="margin-top: 0; letter-spacing: 2px;">manage group</h3>
@@ -633,6 +667,69 @@
     </div>
 
     <style>
+      .gif-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.2s, transform 0.2s;
+  background: #111;
+}
+.gif-thumb:hover {
+  border-color: var(--accent);
+  transform: scale(1.03);
+}
+.msg-gif {
+  max-width: 100%;
+  width: 240px;
+  border-radius: 8px;
+  display: block;
+  margin-top: 4px;
+}
+      .member-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-bottom: 2px;
+}
+.member-item:hover {
+  background: rgba(255,255,255,0.06);
+}
+.member-item .member-pfp {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #333;
+  flex-shrink: 0;
+  transition: filter 0.2s;
+}
+.member-item.offline-member .member-pfp {
+  filter: grayscale(100%) brightness(0.5);
+  border-color: #333;
+}
+.member-item .member-name {
+  font-size: 12px;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.member-item.offline-member .member-name {
+  color: #555;
+}
+.member-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
       .wave-bg {
         position: fixed;
         top: 0;
@@ -1055,14 +1152,21 @@
                 onclick="toggleMuteNotifications()"
                 title="Mute notifications for this chat"
               >
-              </button>
-              <div
-                onclick="changeChatBG()"
-                style="cursor: pointer; opacity: 0.5; font-size: 18px"
-                title="Change Chat Background"
-              >
-                ⚙️
-              </div>
+              <button
+              id="members-btn"
+              class="nexus-btn"
+              style="width:auto;font-size:10px;margin-right:8px;display:none;"
+              onclick="openMembersPanel()"
+            >
+              👥 Members
+            </button>
+            <div
+              onclick="changeChatBG()"
+              style="cursor: pointer; opacity: 0.5; font-size: 18px"
+              title="Change Chat Background"
+            >
+              ⚙️
+            </div>
             </div>
             <div id="chat-msgs" class="chat-msgs-box"></div>
             <div
@@ -1073,15 +1177,18 @@
                 z-index: 2;
               "
             >
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button onclick="openGifModal()" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);padding:10px 12px;cursor:pointer;border-radius:4px;font-size:14px;transition:0.2s;flex-shrink:0;" title="Send a GIF" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='rgba(255,255,255,0.6)'">GIF</button>
               <input
                 type="text"
                 id="chat-input"
                 class="nexus-input"
-                style="margin: 0"
+                style="margin:0;flex:1;"
                 placeholder="Message..."
                 maxlength="212"
                 onkeydown="if(event.key==='Enter')sendMsg()"
               />
+            </div>
             </div>
           </div>
         </div>
@@ -2762,7 +2869,9 @@ function showGlobalNotification(text) {
 
         hPfp.style.display = "block";
         groupBtn.style.display = type === "private" ? "block" : "none";
-        manageBtn.style.display = "none";
+manageBtn.style.display = "none";
+const membersBtn = document.getElementById("members-btn");
+if (membersBtn) membersBtn.style.display = "block";
 
         if (type === "global") {
           hPfp.style.display = "none";
@@ -3283,12 +3392,36 @@ function tab(id) {
         div.className = `msg ${isMe ? "user" : "other"}`;
         div.dataset.msgId = key;
 
-        // Check for @mentions and format them
-        let messageText = d.text || "";
-        let mentionFound = false;
-        
-        // Parse @mentions and make them blue and clickable
-        messageText = messageText.replace(/@([a-zA-Z0-9_]+)/g, (match, username) => {
+// Check if message is a GIF
+if (d.gif) {
+  const isMe = d.sender === window.myName;
+  const gifDiv = document.createElement("div");
+  gifDiv.className = `msg ${isMe ? "user" : "other"}`;
+  if (!isMe) {
+    gifDiv.innerHTML = `
+      <img class="chat-pfp-trigger" id="msg-pfp-${key}" src="https://via.placeholder.com/24" onclick="viewProfile('${d.sender}')">
+      <span style="color:var(--accent);font-weight:bold;display:block;font-size:10px;">${d.sender}</span>
+      <img class="msg-gif" src="${d.gif}" alt="GIF" />
+    `;
+    db.ref("users/" + d.sender + "/pfp").once("value", (pSnap) => {
+      const img = document.getElementById(`msg-pfp-${key}`);
+      if (img && pSnap.val()) img.src = pSnap.val();
+    });
+  } else {
+    gifDiv.innerHTML = `
+      <div style="font-size:10px;opacity:0.6;text-align:right;margin-bottom:3px;">${window.myName}</div>
+      <img class="msg-gif" src="${d.gif}" alt="GIF" />
+    `;
+  }
+  box.appendChild(gifDiv);
+  return;
+}
+
+let messageText = d.text || "";
+let mentionFound = false;
+
+// Parse @mentions and make them blue and clickable
+messageText = messageText.replace(/@([a-zA-Z0-9_]+)/g, (match, username) => {
           if (username.toLowerCase() === window.myName) {
             mentionFound = true;
           }
@@ -4087,6 +4220,228 @@ function stopProfileMusic() {
   player.pause();
   player.currentTime = 0;
   player.src = "";
+}
+// --- MEMBERS PANEL ---
+let membersPanelListener = null;
+let membersPanelStatusListeners = {};
+
+function openMembersPanel() {
+  const panel = document.getElementById("members-panel");
+  const backdrop = document.getElementById("members-panel-backdrop");
+  const title = document.getElementById("members-panel-title");
+  panel.style.right = "0";
+  backdrop.style.display = "block";
+
+  // Clear previous listeners
+  cleanupMembersPanel();
+
+  if (chatType === "global") {
+    title.innerText = "LIVE CHATROOM";
+    loadAllUsersAsMembers();
+  } else if (chatType === "group") {
+    title.innerText = "GROUP MEMBERS";
+    loadGroupMembers(activeChat);
+  } else if (chatType === "private") {
+    title.innerText = "CONTACT";
+    loadPrivateMembers(activeChat);
+  }
+}
+
+function closeMembersPanel() {
+  document.getElementById("members-panel").style.right = "-320px";
+  document.getElementById("members-panel-backdrop").style.display = "none";
+  cleanupMembersPanel();
+}
+
+function cleanupMembersPanel() {
+  // Detach global users listener if it was attached
+  db.ref("users").off("value");
+
+  // Detach all per-user status listeners
+  Object.keys(membersPanelStatusListeners).forEach(username => {
+    db.ref("users/" + username + "/status").off("value");
+  });
+  membersPanelStatusListeners = {};
+
+  document.getElementById("members-online-list").innerHTML = "";
+  document.getElementById("members-offline-list").innerHTML = "";
+}
+
+function loadGroupMembers(groupId) {
+  db.ref("groups/" + groupId).once("value", (snap) => {
+    const data = snap.val();
+    if (!data || !data.members) return;
+    const members = Object.keys(data.members);
+    renderMembersList(members);
+  });
+}
+
+function loadPrivateMembers(otherUser) {
+  // Show yourself + the contact
+  renderMembersList([window.myName, otherUser]);
+}
+
+function loadAllUsersAsMembers() {
+  // Listen in real time so new users joining show up live
+  db.ref("users").on("value", (snap) => {
+    const members = [];
+    snap.forEach(child => members.push(child.key));
+    renderMembersList(members);
+  });
+}
+function renderMembersList(usernames) {
+  const onlineList = document.getElementById("members-online-list");
+  const offlineList = document.getElementById("members-offline-list");
+  onlineList.innerHTML = "";
+  offlineList.innerHTML = "";
+
+  usernames.forEach(username => {
+    // Create placeholder elements for both lists
+    const onlineEl = buildMemberEl(username, true);
+    const offlineEl = buildMemberEl(username, false);
+
+    // Listen to status in real time
+    const statusRef = db.ref("users/" + username + "/status");
+    membersPanelStatusListeners[username] = statusRef;
+
+    // Load pfp once
+    db.ref("users/" + username + "/pfp").once("value", pfpSnap => {
+      const pfp = pfpSnap.val() || "https://via.placeholder.com/32";
+      const imgs = [
+        document.getElementById("mpfp-online-" + username),
+        document.getElementById("mpfp-offline-" + username)
+      ];
+      imgs.forEach(img => { if (img) img.src = pfp; });
+    });
+
+    statusRef.on("value", snap => {
+      const isOnline = snap.val() === "online";
+      if (isOnline) {
+        if (!onlineList.contains(onlineEl)) {
+          onlineList.appendChild(onlineEl);
+          if (offlineList.contains(offlineEl)) offlineList.removeChild(offlineEl);
+        }
+      } else {
+        if (!offlineList.contains(offlineEl)) {
+          offlineList.appendChild(offlineEl);
+          if (onlineList.contains(onlineEl)) onlineList.removeChild(onlineEl);
+        }
+      }
+    });
+  });
+}
+
+function buildMemberEl(username, isOnline) {
+  const div = document.createElement("div");
+  div.className = "member-item" + (!isOnline ? " offline-member" : "");
+  div.onclick = () => { closeMembersPanel(); viewProfile(username); };
+
+  const statusColor = isOnline ? "#00ff88" : "#444";
+  const suffix = isOnline ? "online" : "offline";
+
+  div.innerHTML = `
+    <img id="mpfp-${suffix}-${username}" class="member-pfp" src="https://via.placeholder.com/32" />
+    <span class="member-name">${username}</span>
+    <div class="member-status-dot" style="background:${statusColor};${isOnline ? "box-shadow:0 0 6px #00ff88;" : ""}"></div>
+  `;
+  return div;
+}
+// --- GIF PICKER ---
+// Replace with your Giphy API key from developers.giphy.com (free)
+const GIPHY_API_KEY = "8gobBXWBuxbqA7Ko3G3l4oacWLbMcdgH";
+let gifSearchTimeout = null;
+
+function openGifModal() {
+  if (!activeChat) return;
+  const modal = document.getElementById("gif-modal");
+  modal.style.display = "flex";
+  document.getElementById("gif-search-input").focus();
+  // Load trending GIFs by default
+  loadTrendingGifs();
+}
+
+function closeGifModal() {
+  document.getElementById("gif-modal").style.display = "none";
+  document.getElementById("gif-search-input").value = "";
+  document.getElementById("gif-results").innerHTML = '<div id="gif-placeholder" style="grid-column:1/-1;text-align:center;opacity:0.4;padding:40px;font-size:13px;">Search for a GIF above</div>';
+}
+
+function loadTrendingGifs() {
+  const results = document.getElementById("gif-results");
+  const loading = document.getElementById("gif-loading");
+  results.innerHTML = "";
+  loading.style.display = "block";
+
+  fetch(`https://api.giphy.com/v1/gifs/trending?api_key=8gobBXWBuxbqA7Ko3G3l4oacWLbMcdgH&limit=18&rating=pg-13`)
+    .then(r => r.json())
+    .then(data => {
+      loading.style.display = "none";
+      renderGifResults(data.data || []);
+    })
+    .catch(() => {
+      loading.style.display = "none";
+      results.innerHTML = '<div style="grid-column:1/-1;text-align:center;opacity:0.4;padding:40px;font-size:13px;">Failed to load GIFs. Check your API key.</div>';
+    });
+}
+
+function searchGifs() {
+  const query = document.getElementById("gif-search-input").value.trim();
+  if (!query) { loadTrendingGifs(); return; }
+
+  const results = document.getElementById("gif-results");
+  const loading = document.getElementById("gif-loading");
+  results.innerHTML = "";
+  loading.style.display = "block";
+
+  fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(query)}&limit=18&rating=pg-13`)
+    .then(r => r.json())
+    .then(data => {
+      loading.style.display = "none";
+      renderGifResults(data.data || []);
+    })
+    .catch(() => {
+      loading.style.display = "none";
+      results.innerHTML = '<div style="grid-column:1/-1;text-align:center;opacity:0.4;padding:40px;font-size:13px;">Search failed. Try again.</div>';
+    });
+}
+
+function renderGifResults(gifs) {
+  const results = document.getElementById("gif-results");
+  results.innerHTML = "";
+  if (gifs.length === 0) {
+    results.innerHTML = '<div style="grid-column:1/-1;text-align:center;opacity:0.4;padding:40px;font-size:13px;">No GIFs found.</div>';
+    return;
+  }
+  gifs.forEach(gif => {
+    const url = gif.images.fixed_height_small.url;
+    const original = gif.images.original.url;
+    const img = document.createElement("img");
+    img.className = "gif-thumb";
+    img.src = url;
+    img.loading = "lazy";
+    img.onclick = () => sendGif(original);
+    results.appendChild(img);
+  });
+}
+
+function sendGif(gifUrl) {
+  if (!activeChat) return;
+  closeGifModal();
+
+  const chatId =
+    chatType === "global"
+      ? "GLOBAL_CHAT"
+      : chatType === "group"
+      ? activeChat
+      : [window.myName, activeChat].sort().join("_");
+
+  db.ref("messages/" + chatId).push({
+    sender: window.myName,
+    gif: gifUrl,
+    text: "",
+    timestamp: Date.now(),
+    seen: { [window.myName]: true },
+  });
 }
     </script>
   </body>
