@@ -591,9 +591,10 @@
   <body onload="init()">
     <div id="money-pop">+1 Nexus Credit</div>
 <body onload="init()">
-    <audio id="profile-audio" preload="auto">
-      <source src="Greenday_-_American_Idiot_(mp3.pm).mp3" type="audio/mpeg">
-    </audio>
+  <audio id="profile-audio" preload="auto">
+    <source src="Greenday_-_American_Idiot_(mp3.pm).mp3" type="audio/mpeg">
+  </audio>
+  <audio id="profile-music-player" preload="auto" loop></audio>
     <div id="money-pop">+1 Nexus Credit</div>
     <div id="global-notification">
       <span class="ut-speaker">* dom :</span>
@@ -1699,6 +1700,33 @@
           url: "", // URL removed - add back later
           allowed: ["dom", "nath"],
         },
+        {
+  id: "music_wemmbu",
+  name: "Song for Wemmbu",
+  price: 500,
+  url: "",
+  type: "music",
+  audioUrl: "wemmbu.mp3",
+  icon: "🎵"
+},
+{
+  id: "music_basooka",
+  name: "RIP My Granny",
+  price: 500,
+  url: "",
+  type: "music",
+  audioUrl: "basooka.mp3",
+  icon: "🎵"
+},
+{
+  id: "music_neon",
+  name: "Neon Guts",
+  price: 500,
+  url: "",
+  type: "music",
+  audioUrl: "neon guts.mp3",
+  icon: "🎵"
+},
       ];
 
       function init() {
@@ -2957,45 +2985,73 @@ function showGlobalNotification(text) {
       }
 
       function renderShop() {
-        const container = document.getElementById("shop-items-container");
-        container.innerHTML = "";
-        const now = Date.now();
-        SHOP_ITEMS.forEach((item) => {
-          if (item.allowed && !item.allowed.includes(window.myName)) return;
-          const isOwned = myInventory.includes(item.id);
-          container.innerHTML += `
-            <div class="shop-item ${isOwned ? "owned" : ""}">
-              <div class="bg-preview" style="background: url('${item.url}');"></div>
-              <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">${item.name}</div>
-              <div style="font-size:12px; opacity:0.7; margin-bottom:10px;">${item.price} NC</div>
-              <button class="nexus-btn ${isOwned ? "equip-btn" : ""}" onclick="${isOwned ? `equip('${item.url.replace(/'/g, "\\'")}')` : `buy('${item.id}', ${item.price})`}" ${!isOwned && myBalance < item.price ? "disabled" : ""}>
-                ${isOwned ? "Equip" : "Purchase"}
-              </button>
-            </div>`;
-        });
-        Object.keys(limitedShopItems).forEach((key) => {
-          const item = limitedShopItems[key];
-          const expiresAt = item.createdAt + item.durationMs;
-          if (expiresAt <= now) return;
-          const remainingMs = expiresAt - now;
-          const timeLabel = formatRemainingTime(remainingMs);
-          const isOwned = myInventory.includes(item.id);
-          const div = document.createElement("div");
-          div.className = "shop-item" + (isOwned ? " owned" : "");
-          div.innerHTML = `
-            <div class="bg-preview" style="background: url('${(item.url || "").replace(/'/g, "%27")}');">
-              <span class="limited-badge">LIMITED ${timeLabel}</span>
-            </div>
-            <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">${(item.name || "").replace(/</g, "&lt;")}</div>
-            <div style="font-size:12px; opacity:0.7; margin-bottom:10px;">${item.price} NC</div>
-            <button class="nexus-btn ${isOwned ? "equip-btn" : ""}" ${!isOwned && myBalance < item.price ? "disabled" : ""}>
-              ${isOwned ? "Equip" : "Purchase"}
-            </button>`;
-          const btn = div.querySelector("button");
-          btn.onclick = () => isOwned ? equip(item.url) : buy(item.id, item.price);
-          container.appendChild(div);
-        });
-      }
+  const container = document.getElementById("shop-items-container");
+  container.innerHTML = "";
+  const now = Date.now();
+
+  // Separator: backgrounds
+  container.innerHTML += `<div style="grid-column: 1/-1; color: var(--accent); font-size: 11px; letter-spacing: 3px; padding: 5px 0; border-bottom: 1px solid var(--border); margin-bottom: 5px;">🖼️ BACKGROUNDS</div>`;
+
+  SHOP_ITEMS.forEach((item) => {
+    if (item.type === "music") return;
+    if (item.allowed && !item.allowed.includes(window.myName)) return;
+    const isOwned = Array.isArray(myInventory) ? myInventory.includes(item.id) : false;
+    container.innerHTML += `
+      <div class="shop-item ${isOwned ? "owned" : ""}">
+        <div class="bg-preview" style="background: url('${item.url}');"></div>
+        <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">${item.name}</div>
+        <div style="font-size:12px; opacity:0.7; margin-bottom:10px;">${item.price} NC</div>
+        <button class="nexus-btn ${isOwned ? "equip-btn" : ""}" onclick="${isOwned ? `equip('${item.url.replace(/'/g, "\\'")}')` : `buy('${item.id}', ${item.price})`}" ${!isOwned && myBalance < item.price ? "disabled" : ""}>
+          ${isOwned ? "Equip" : "Purchase"}
+        </button>
+      </div>`;
+  });
+
+  // Limited items
+  Object.keys(limitedShopItems).forEach((key) => {
+    const item = limitedShopItems[key];
+    const expiresAt = item.createdAt + item.durationMs;
+    if (expiresAt <= now) return;
+    const remainingMs = expiresAt - now;
+    const timeLabel = formatRemainingTime(remainingMs);
+    const isOwned = Array.isArray(myInventory) ? myInventory.includes(item.id) : false;
+    const div = document.createElement("div");
+    div.className = "shop-item" + (isOwned ? " owned" : "");
+    div.innerHTML = `
+      <div class="bg-preview" style="background: url('${(item.url || "").replace(/'/g, "%27")}');">
+        <span class="limited-badge">LIMITED ${timeLabel}</span>
+      </div>
+      <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">${(item.name || "").replace(/</g, "&lt;")}</div>
+      <div style="font-size:12px; opacity:0.7; margin-bottom:10px;">${item.price} NC</div>
+      <button class="nexus-btn ${isOwned ? "equip-btn" : ""}" ${!isOwned && myBalance < item.price ? "disabled" : ""}>
+        ${isOwned ? "Equip" : "Purchase"}
+      </button>`;
+    const btn = div.querySelector("button");
+    btn.onclick = () => isOwned ? equip(item.url) : buy(item.id, item.price);
+    container.appendChild(div);
+  });
+
+  // Music section
+  container.innerHTML += `<div style="grid-column: 1/-1; color: var(--accent); font-size: 11px; letter-spacing: 3px; padding: 5px 0; border-bottom: 1px solid var(--border); margin: 10px 0 5px 0;">🎵 PROFILE MUSIC</div>`;
+
+  SHOP_ITEMS.forEach((item) => {
+    if (item.type !== "music") return;
+    const isOwned = Array.isArray(myInventory) ? myInventory.includes(item.id) : false;
+    const div = document.createElement("div");
+    div.className = "shop-item" + (isOwned ? " owned" : "");
+    div.innerHTML = `
+      <div class="bg-preview" style="background: #111; display:flex; align-items:center; justify-content:center; font-size: 40px;">🎵</div>
+      <div style="font-weight:bold; font-size:13px; margin-bottom:5px;">${item.name}</div>
+      <div style="font-size:12px; opacity:0.7; margin-bottom:6px;">${item.price} NC</div>
+      <button class="nexus-btn" id="preview-${item.id}" onclick="previewMusic('${item.audioUrl}', '${item.id}')" style="margin-bottom:6px; border-color:#888; color:#aaa; font-size:9px;">▶ PREVIEW</button>
+      <button class="nexus-btn ${isOwned ? "equip-btn" : ""}" ${!isOwned && myBalance < item.price ? "disabled" : ""}>
+        ${isOwned ? "Equip Music" : "Purchase"}
+      </button>`;
+    const actionBtn = div.querySelectorAll("button")[1];
+    actionBtn.onclick = () => isOwned ? equipMusic(item.audioUrl, item.id) : buy(item.id, item.price);
+    container.appendChild(div);
+  });
+}
 
       function getItemById(id) {
         const fromShop = SHOP_ITEMS.find((i) => i.id === id);
@@ -3006,27 +3062,62 @@ function showGlobalNotification(text) {
       }
 
       function renderInventory() {
-        const container = document.getElementById("inventory-items-container");
-        if (!container) return;
-        container.innerHTML = "";
-        const ids = Array.isArray(myInventory) ? myInventory : [];
-        ids.forEach((id) => {
-          const item = getItemById(id);
-          if (!item || !item.url) return;
-          const div = document.createElement("div");
-          div.className = "shop-item owned";
-          div.innerHTML = `
-            <div class="bg-preview" style="background: url('${(item.url || "").replace(/'/g, "%27")}');"></div>
-            <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">${(item.name || id).replace(/</g, "&lt;")}</div>
-            <button class="nexus-btn equip-btn">Equip</button>`;
-          const btn = div.querySelector("button");
-          btn.onclick = () => equip(item.url);
-          container.appendChild(div);
-        });
-        if (ids.length === 0) {
-          container.innerHTML = '<p style="opacity: 0.6; font-size: 14px;">No backgrounds yet. Buy some in the shop!</p>';
-        }
-      }
+  const container = document.getElementById("inventory-items-container");
+  if (!container) return;
+  container.innerHTML = "";
+  const ids = Array.isArray(myInventory) ? myInventory : [];
+
+  const bgIds = ids.filter(id => {
+    const item = getItemById(id);
+    return item && item.type !== "music";
+  });
+  const musicIds = ids.filter(id => {
+    const item = getItemById(id);
+    return item && item.type === "music";
+  });
+
+  if (bgIds.length === 0 && musicIds.length === 0) {
+    container.innerHTML = '<p style="opacity: 0.6; font-size: 14px;">No items yet. Buy some in the shop!</p>';
+    return;
+  }
+
+  if (bgIds.length > 0) {
+    container.innerHTML += `<div style="grid-column: 1/-1; color: var(--accent); font-size: 11px; letter-spacing: 3px; padding: 5px 0; border-bottom: 1px solid var(--border); margin-bottom: 5px;">🖼️ BACKGROUNDS</div>`;
+    bgIds.forEach((id) => {
+      const item = getItemById(id);
+      if (!item) return;
+      const div = document.createElement("div");
+      div.className = "shop-item owned";
+      div.innerHTML = `
+        <div class="bg-preview" style="background: url('${(item.url || "").replace(/'/g, "%27")}');"></div>
+        <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">${(item.name || id).replace(/</g, "&lt;")}</div>
+        <button class="nexus-btn equip-btn">Equip</button>`;
+      div.querySelector("button").onclick = () => equip(item.url);
+      container.appendChild(div);
+    });
+  }
+
+  if (musicIds.length > 0) {
+    const sep = document.createElement("div");
+    sep.style.cssText = "grid-column: 1/-1; color: var(--accent); font-size: 11px; letter-spacing: 3px; padding: 5px 0; border-bottom: 1px solid var(--border); margin: 10px 0 5px 0;";
+    sep.innerText = "🎵 PROFILE MUSIC";
+    container.appendChild(sep);
+
+    musicIds.forEach((id) => {
+      const item = getItemById(id);
+      if (!item) return;
+      const div = document.createElement("div");
+      div.className = "shop-item owned";
+      div.innerHTML = `
+        <div class="bg-preview" style="background:#111; display:flex; align-items:center; justify-content:center; font-size:40px;">🎵</div>
+        <div style="font-weight:bold; font-size:13px; margin-bottom:5px;">${(item.name || id).replace(/</g, "&lt;")}</div>
+        <button class="nexus-btn" onclick="previewMusic('${item.audioUrl}', '${item.id}')" style="margin-bottom:6px; border-color:#888; color:#aaa; font-size:9px;">▶ PREVIEW</button>
+        <button class="nexus-btn equip-btn">Equip Music</button>`;
+      div.querySelectorAll("button")[1].onclick = () => equipMusic(item.audioUrl, item.id);
+      container.appendChild(div);
+    });
+  }
+}
 
       function buy(id, price) {
         if (myBalance >= price) {
@@ -3065,15 +3156,23 @@ function showGlobalNotification(text) {
   console.log("Viewing profile:", username); // Debug log
   
   if (username === "dom") {
-    console.log("Attempting to play audio for dom"); // Debug log
     audio.currentTime = 0;
-    audio.play()
-      .then(() => console.log("Audio playing successfully"))
-      .catch(e => console.error("Audio play failed:", e));
+    audio.play().catch(e => {});
   } else {
     audio.pause();
     audio.currentTime = 0;
   }
+
+  // Stop any existing profile music first
+  stopProfileMusic();
+
+  // Load and play this user's equipped profile music
+  db.ref("users/" + username + "/active_music").once("value", (mSnap) => {
+    const musicUrl = mSnap.val();
+    if (musicUrl) {
+      playProfileMusic(musicUrl);
+    }
+  });
 
   db.ref("users/" + username).on("value", (snap) => {
     const data = snap.val();
@@ -3120,6 +3219,9 @@ function tab(id) {
     const audio = document.getElementById("profile-audio");
     audio.pause();
     audio.currentTime = 0;
+    stopProfileMusic();
+    // Also stop any shop previews
+    if (previewAudio) { previewAudio.pause(); previewAudio = null; }
   }
   
   if (id === "water")
@@ -3936,6 +4038,56 @@ function tab(id) {
         // Update header
         document.querySelector('#games span').textContent = 'games';
       }
+      // --- PROFILE MUSIC ---
+let previewAudio = null;
+
+function previewMusic(audioUrl, itemId) {
+  // Stop any existing preview
+  if (previewAudio) {
+    previewAudio.pause();
+    previewAudio = null;
+    // Reset all preview buttons
+    document.querySelectorAll('[id^="preview-"]').forEach(btn => {
+      btn.innerText = "▶ PREVIEW";
+      btn.style.color = "#aaa";
+    });
+  }
+  const btn = document.getElementById("preview-" + itemId);
+  if (btn && btn.innerText === "⏹ STOP") return; // toggle off
+
+  previewAudio = new Audio(audioUrl);
+  previewAudio.volume = 0.5;
+  previewAudio.play().catch(() => {});
+  previewAudio.onended = () => {
+    if (btn) { btn.innerText = "▶ PREVIEW"; btn.style.color = "#aaa"; }
+    previewAudio = null;
+  };
+  if (btn) { btn.innerText = "⏹ STOP"; btn.style.color = "var(--accent)"; }
+}
+
+function equipMusic(audioUrl, itemId) {
+  // Stop preview if playing
+  if (previewAudio) { previewAudio.pause(); previewAudio = null; }
+  db.ref("users/" + window.myName + "/active_music").set(audioUrl);
+  alert("Profile music equipped!");
+}
+
+function playProfileMusic(audioUrl) {
+  const player = document.getElementById("profile-music-player");
+  if (!player) return;
+  if (player.src && player.src.endsWith(audioUrl) && !player.paused) return; // already playing
+  player.src = audioUrl;
+  player.currentTime = 0;
+  player.play().catch(() => {});
+}
+
+function stopProfileMusic() {
+  const player = document.getElementById("profile-music-player");
+  if (!player) return;
+  player.pause();
+  player.currentTime = 0;
+  player.src = "";
+}
     </script>
   </body>
 </html>
