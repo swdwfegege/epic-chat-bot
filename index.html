@@ -609,6 +609,76 @@
     </div>
     <div id="image-popup-flash"></div>
     <div id="message-notification">you have a message</div>
+    <!-- TRADE OFFER MODAL -->
+<div id="trade-modal" style="display:none;position:fixed;inset:0;z-index:10006;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);" onclick="if(event.target===this)closeTradeModal()">
+  <div style="background:#0a0a0a;border:1px solid rgba(255,255,255,0.1);border-radius:12px;width:600px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;">
+    <div style="padding:15px 20px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;">
+      <span style="color:#00f2ff;font-size:13px;letter-spacing:2px;">🔄 TRADE REQUEST</span>
+      <span onclick="closeTradeModal()" style="cursor:pointer;opacity:0.5;font-size:20px;">✕</span>
+    </div>
+    <div style="display:flex;flex:1;overflow:hidden;">
+      <!-- YOUR OFFER SIDE -->
+      <div style="flex:1;padding:15px;border-right:1px solid rgba(255,255,255,0.1);overflow-y:auto;">
+        <div style="font-size:10px;color:#00f2ff;letter-spacing:2px;margin-bottom:12px;">YOUR OFFER</div>
+        <!-- Credits -->
+        <div style="margin-bottom:12px;">
+          <div style="font-size:10px;opacity:0.6;margin-bottom:5px;">CREDITS</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="number" id="trade-my-credits" class="nexus-input" style="margin:0;padding:8px;font-size:12px;" placeholder="0" min="0" />
+          </div>
+        </div>
+        <!-- Backgrounds -->
+        <div style="margin-bottom:12px;">
+          <div style="font-size:10px;opacity:0.6;margin-bottom:5px;">BACKGROUNDS</div>
+          <div id="trade-my-bgs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;"></div>
+          <button class="nexus-btn" onclick="openTradeItemPicker('bg','my')" style="width:auto;padding:5px 12px;font-size:10px;">+ Add Background</button>
+        </div>
+        <!-- Music -->
+        <div>
+          <div style="font-size:10px;opacity:0.6;margin-bottom:5px;">PROFILE MUSIC</div>
+          <div id="trade-my-music" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;"></div>
+          <button class="nexus-btn" onclick="openTradeItemPicker('music','my')" style="width:auto;padding:5px 12px;font-size:10px;">+ Add Music</button>
+        </div>
+      </div>
+      <!-- THEIR OFFER SIDE -->
+      <div style="flex:1;padding:15px;overflow-y:auto;">
+        <div style="font-size:10px;color:#00ff88;letter-spacing:2px;margin-bottom:12px;">YOU WANT (from <span id="trade-target-name"></span>)</div>
+        <!-- Credits -->
+        <div style="margin-bottom:12px;">
+          <div style="font-size:10px;opacity:0.6;margin-bottom:5px;">CREDITS</div>
+          <input type="number" id="trade-their-credits" class="nexus-input" style="margin:0;padding:8px;font-size:12px;" placeholder="0" min="0" />
+        </div>
+        <!-- Backgrounds -->
+        <div style="margin-bottom:12px;">
+          <div style="font-size:10px;opacity:0.6;margin-bottom:5px;">BACKGROUNDS</div>
+          <div id="trade-their-bgs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;"></div>
+          <button class="nexus-btn" onclick="openTradeItemPicker('bg','their')" style="width:auto;padding:5px 12px;font-size:10px;">+ Add Background</button>
+        </div>
+        <!-- Music -->
+        <div>
+          <div style="font-size:10px;opacity:0.6;margin-bottom:5px;">PROFILE MUSIC</div>
+          <div id="trade-their-music" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;"></div>
+          <button class="nexus-btn" onclick="openTradeItemPicker('music','their')" style="width:auto;padding:5px 12px;font-size:10px;">+ Add Music</button>
+        </div>
+      </div>
+    </div>
+    <div style="padding:15px 20px;border-top:1px solid rgba(255,255,255,0.1);display:flex;gap:10px;justify-content:flex-end;">
+      <button class="nexus-btn" onclick="closeTradeModal()" style="width:auto;padding:10px 20px;border-color:#555;color:#555;">Cancel</button>
+      <button class="nexus-btn" onclick="sendTradeRequest()" style="width:auto;padding:10px 20px;">Send Trade</button>
+    </div>
+  </div>
+</div>
+
+<!-- ITEM PICKER MODAL -->
+<div id="trade-picker-modal" style="display:none;position:fixed;inset:0;z-index:10007;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);" onclick="if(event.target===this)closeTradePickerModal()">
+  <div style="background:#0a0a0a;border:1px solid rgba(255,255,255,0.1);border-radius:12px;width:450px;max-width:95vw;max-height:70vh;display:flex;flex-direction:column;overflow:hidden;">
+    <div style="padding:15px 20px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;">
+      <span id="picker-title" style="color:#00f2ff;font-size:12px;letter-spacing:2px;">SELECT ITEM</span>
+      <span onclick="closeTradePickerModal()" style="cursor:pointer;opacity:0.5;font-size:20px;">✕</span>
+    </div>
+    <div id="picker-items" style="flex:1;overflow-y:auto;padding:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;"></div>
+  </div>
+</div>
     <div id="gif-modal" style="display:none;position:fixed;inset:0;z-index:10005;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);" onclick="if(event.target===this)closeGifModal()">
       <div style="background:#0a0a0a;border:1px solid rgba(255,255,255,0.1);border-radius:12px;width:500px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">
         <div style="padding:15px 18px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:10px;">
@@ -1679,6 +1749,27 @@
               </div>
               <div id="group-invites-container"></div>
             </div>
+            <div
+  id="trade-invites-section"
+  style="
+    width: 100%;
+    margin-top: 20px;
+    border-top: 1px solid var(--border);
+    display: none;
+  "
+>
+  <div
+    style="
+      font-size: 10px;
+      color: var(--accent);
+      margin-top: 15px;
+      letter-spacing: 1px;
+    "
+  >
+    TRADE INVITES
+  </div>
+  <div id="trade-invites-container"></div>
+</div>
             <button
               id="pfp-edit-btn"
               class="nexus-btn"
@@ -2114,6 +2205,7 @@
         listenGroups();
         listenRequests();
         listenGroupInvites();
+listenTradeInvites();
         listenGlobalMessage();
         listenLimitedShopItems();
         setupMessageListeners();
@@ -3255,9 +3347,29 @@ if (membersBtn) membersBtn.style.display = "block";
   document.getElementById("display-username").innerText = username;
   document.getElementById("pfp-edit-btn").style.display =
     username === window.myName ? "block" : "none";
+
+// Show/hide trade & friend buttons
+let existingActionBtns = document.getElementById("profile-action-btns");
+if (existingActionBtns) existingActionBtns.remove();
+
+if (username !== window.myName) {
+  const actionDiv = document.createElement("div");
+  actionDiv.id = "profile-action-btns";
+  actionDiv.style.cssText = "display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;justify-content:center;";
+  actionDiv.innerHTML = `
+    <button class="nexus-btn" onclick="sendFriendRequestFromProfile('${username}')" style="width:auto;padding:7px 14px;font-size:10px;border-color:#00ff88;color:#00ff88;">+ Friend Request</button>
+    <button class="nexus-btn" onclick="openTradeModal('${username}')" style="width:auto;padding:7px 14px;font-size:10px;border-color:#ff9900;color:#ff9900;">🔄 Trade Request</button>
+  `;
+  // Insert before the pfp-edit-btn
+  const card = document.querySelector(".profile-card-ui");
+  const logoutBtn = card.querySelector(".logout-btn");
+  card.insertBefore(actionDiv, logoutBtn.nextSibling);
+}
   document.getElementById("pending-requests-section").style.display =
     username === window.myName ? "block" : "none";
-  document.getElementById("group-invites-section").style.display =
+    document.getElementById("group-invites-section").style.display =
+    username === window.myName ? "block" : "none";
+document.getElementById("trade-invites-section").style.display =
     username === window.myName ? "block" : "none";
 
   // Handle audio for dom's profile
@@ -4441,6 +4553,331 @@ function sendGif(gifUrl) {
     text: "",
     timestamp: Date.now(),
     seen: { [window.myName]: true },
+  });
+}
+// --- TRADING SYSTEM ---
+let tradeTarget = null;
+let tradeOffer = { credits: 0, bgs: [], music: [] };
+let tradeWant = { credits: 0, bgs: [], music: [] };
+let pickerMode = { type: null, side: null };
+
+function sendFriendRequestFromProfile(username) {
+  if (username === window.myName) return;
+  db.ref("requests/" + username + "/" + window.myName).set(true);
+  alert("Friend request sent to " + username + "!");
+}
+
+function openTradeModal(username) {
+  tradeTarget = username;
+  tradeOffer = { credits: 0, bgs: [], music: [] };
+  tradeWant = { credits: 0, bgs: [], music: [] };
+  document.getElementById("trade-target-name").innerText = username;
+  document.getElementById("trade-my-credits").value = "";
+  document.getElementById("trade-their-credits").value = "";
+  document.getElementById("trade-my-bgs").innerHTML = "";
+  document.getElementById("trade-my-music").innerHTML = "";
+  document.getElementById("trade-their-bgs").innerHTML = "";
+  document.getElementById("trade-their-music").innerHTML = "";
+  document.getElementById("trade-modal").style.display = "flex";
+}
+
+function closeTradeModal() {
+  document.getElementById("trade-modal").style.display = "none";
+  tradeTarget = null;
+}
+
+function openTradeItemPicker(type, side) {
+  pickerMode = { type, side };
+  const title = document.getElementById("picker-title");
+  const items = document.getElementById("picker-items");
+  items.innerHTML = "";
+
+  title.innerText = (type === "bg" ? "SELECT BACKGROUND" : "SELECT MUSIC") + " — " + (side === "my" ? "YOUR OFFER" : "YOU WANT");
+
+  // For "my" side, show items from MY inventory
+  // For "their" side, show items from TARGET's inventory
+  const userToCheck = side === "my" ? window.myName : tradeTarget;
+
+  db.ref("users/" + userToCheck + "/inventory").once("value", (snap) => {
+    const inv = snap.val() || [];
+    const invArr = Array.isArray(inv) ? inv : Object.keys(inv);
+
+    const filtered = invArr.filter(id => {
+      const item = getItemById(id);
+      if (!item) return false;
+      if (type === "bg") return item.type !== "music";
+      if (type === "music") return item.type === "music";
+      return false;
+    });
+
+    if (filtered.length === 0) {
+      items.innerHTML = `<div style="grid-column:1/-1;text-align:center;opacity:0.4;padding:30px;font-size:12px;">${userToCheck} has no ${type === "bg" ? "backgrounds" : "music"} to trade.</div>`;
+      document.getElementById("trade-picker-modal").style.display = "flex";
+      return;
+    }
+
+    filtered.forEach(id => {
+      const item = getItemById(id);
+      if (!item) return;
+
+      // Check if already added
+      const alreadyAdded = side === "my"
+        ? (type === "bg" ? tradeOffer.bgs.includes(id) : tradeOffer.music.includes(id))
+        : (type === "bg" ? tradeWant.bgs.includes(id) : tradeWant.music.includes(id));
+
+      const div = document.createElement("div");
+      div.style.cssText = `background:rgba(255,255,255,0.04);border:1px solid ${alreadyAdded ? "var(--online)" : "rgba(255,255,255,0.1)"};border-radius:8px;padding:10px;cursor:pointer;text-align:center;transition:0.2s;`;
+      div.innerHTML = `
+        <div style="width:100%;height:70px;background:${item.type === "music" ? "#111" : `url('${item.url || ""}') center/cover`};border-radius:4px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;font-size:28px;">${item.type === "music" ? "🎵" : ""}</div>
+        <div style="font-size:10px;font-weight:bold;margin-bottom:4px;">${item.name || id}</div>
+        <div style="font-size:9px;color:${alreadyAdded ? "var(--online)" : "rgba(255,255,255,0.4)"};">${alreadyAdded ? "✓ Added" : "Click to add"}</div>
+      `;
+      div.onclick = () => {
+        if (alreadyAdded) return;
+        if (side === "my") {
+          if (type === "bg") tradeOffer.bgs.push(id);
+          else tradeOffer.music.push(id);
+        } else {
+          if (type === "bg") tradeWant.bgs.push(id);
+          else tradeWant.music.push(id);
+        }
+        refreshTradeOfferUI();
+        closeTradePickerModal();
+      };
+      items.appendChild(div);
+    });
+
+    document.getElementById("trade-picker-modal").style.display = "flex";
+  });
+}
+
+function closeTradePickerModal() {
+  document.getElementById("trade-picker-modal").style.display = "none";
+}
+
+function refreshTradeOfferUI() {
+  renderTradeItems("trade-my-bgs", tradeOffer.bgs, "bg", "my");
+  renderTradeItems("trade-my-music", tradeOffer.music, "music", "my");
+  renderTradeItems("trade-their-bgs", tradeWant.bgs, "bg", "their");
+  renderTradeItems("trade-their-music", tradeWant.music, "music", "their");
+}
+
+function renderTradeItems(containerId, ids, type, side) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+  ids.forEach(id => {
+    const item = getItemById(id);
+    if (!item) return;
+    const pill = document.createElement("div");
+    pill.style.cssText = "background:rgba(0,242,255,0.1);border:1px solid var(--accent);border-radius:20px;padding:4px 10px;font-size:10px;display:flex;align-items:center;gap:6px;";
+    pill.innerHTML = `
+      <span>${item.type === "music" ? "🎵" : "🖼️"} ${item.name || id}</span>
+      <span onclick="removeTradeItem('${id}','${type}','${side}')" style="cursor:pointer;color:var(--alert);font-size:12px;line-height:1;">✕</span>
+    `;
+    container.appendChild(pill);
+  });
+}
+
+function removeTradeItem(id, type, side) {
+  if (side === "my") {
+    if (type === "bg") tradeOffer.bgs = tradeOffer.bgs.filter(x => x !== id);
+    else tradeOffer.music = tradeOffer.music.filter(x => x !== id);
+  } else {
+    if (type === "bg") tradeWant.bgs = tradeWant.bgs.filter(x => x !== id);
+    else tradeWant.music = tradeWant.music.filter(x => x !== id);
+  }
+  refreshTradeOfferUI();
+}
+
+function sendTradeRequest() {
+  if (!tradeTarget) return;
+  const myCredits = parseInt(document.getElementById("trade-my-credits").value) || 0;
+  const theirCredits = parseInt(document.getElementById("trade-their-credits").value) || 0;
+
+  if (myCredits > myBalance) {
+    alert("You don't have enough credits to offer that!");
+    return;
+  }
+  if (myCredits === 0 && theirCredits === 0 && tradeOffer.bgs.length === 0 && tradeOffer.music.length === 0 && tradeWant.bgs.length === 0 && tradeWant.music.length === 0) {
+    alert("Add something to the trade first!");
+    return;
+  }
+
+  const tradeData = {
+    from: window.myName,
+    to: tradeTarget,
+    offer: { credits: myCredits, bgs: tradeOffer.bgs, music: tradeOffer.music },
+    want: { credits: theirCredits, bgs: tradeWant.bgs, music: tradeWant.music },
+    timestamp: Date.now(),
+    status: "pending"
+  };
+
+  const tradeId = "trade_" + Date.now();
+  db.ref("tradeInvites/" + tradeTarget + "/" + tradeId).set(tradeData).then(() => {
+    db.ref("notifications/" + tradeTarget).push({
+      text: window.myName + " sent you a trade request!",
+      from: window.myName,
+      timestamp: Date.now()
+    });
+    closeTradeModal();
+    alert("Trade request sent to " + tradeTarget + "!");
+  });
+}
+
+function listenTradeInvites() {
+  db.ref("tradeInvites/" + window.myName).on("value", (snap) => {
+    const container = document.getElementById("trade-invites-container");
+    if (!container) return;
+    container.innerHTML = "";
+    let count = 0;
+
+    snap.forEach((inv) => {
+      const data = inv.val();
+      if (!data || data.status !== "pending") return;
+      count++;
+      const tradeId = inv.key;
+
+      const div = document.createElement("div");
+      div.style.cssText = "background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-top:8px;font-size:11px;";
+
+      // Build summary
+      const offerParts = [];
+      if (data.offer.credits > 0) offerParts.push(data.offer.credits + " credits");
+      (data.offer.bgs || []).forEach(id => {
+        const item = getItemById(id);
+        offerParts.push("🖼️ " + (item ? item.name : id));
+      });
+      (data.offer.music || []).forEach(id => {
+        const item = getItemById(id);
+        offerParts.push("🎵 " + (item ? item.name : id));
+      });
+
+      const wantParts = [];
+      if (data.want.credits > 0) wantParts.push(data.want.credits + " credits");
+      (data.want.bgs || []).forEach(id => {
+        const item = getItemById(id);
+        wantParts.push("🖼️ " + (item ? item.name : id));
+      });
+      (data.want.music || []).forEach(id => {
+        const item = getItemById(id);
+        wantParts.push("🎵 " + (item ? item.name : id));
+      });
+
+      div.innerHTML = `
+        <div style="font-weight:bold;color:var(--accent);margin-bottom:6px;">Trade from ${data.from}</div>
+        <div style="margin-bottom:4px;"><span style="opacity:0.6;">They offer:</span> ${offerParts.length ? offerParts.join(", ") : "nothing"}</div>
+        <div style="margin-bottom:8px;"><span style="opacity:0.6;">They want:</span> ${wantParts.length ? wantParts.join(", ") : "nothing"}</div>
+        <div style="display:flex;gap:6px;">
+          <button class="nexus-btn" onclick="acceptTrade('${tradeId}')" style="width:auto;padding:5px 14px;font-size:10px;border-color:var(--online);color:var(--online);">Accept</button>
+          <button class="nexus-btn" onclick="declineTrade('${tradeId}')" style="width:auto;padding:5px 14px;font-size:10px;border-color:var(--alert);color:var(--alert);">Decline</button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+
+    const section = document.getElementById("trade-invites-section");
+    if (section) section.style.display = count > 0 ? "block" : "none";
+  });
+}
+
+function acceptTrade(tradeId) {
+  db.ref("tradeInvites/" + window.myName + "/" + tradeId).once("value", (snap) => {
+    const data = snap.val();
+    if (!data) return;
+
+    const them = data.from;
+
+    // Validate both sides still have the items/credits
+    db.ref("users/" + window.myName).once("value", (mySnap) => {
+      db.ref("users/" + them).once("value", (themSnap) => {
+        const myData = mySnap.val() || {};
+        const themData = themSnap.val() || {};
+        const myBal = myData.balance || 0;
+        const themBal = themData.balance || 0;
+        const myInv = Array.isArray(myData.inventory) ? myData.inventory : [];
+        const themInv = Array.isArray(themData.inventory) ? themData.inventory : [];
+
+        // Validate credits
+        if ((data.want.credits || 0) > myBal) { alert("You don't have enough credits!"); return; }
+        if ((data.offer.credits || 0) > themBal) { alert("They no longer have enough credits!"); return; }
+
+        // Validate items still owned
+        for (const id of (data.want.bgs || [])) {
+          if (!myInv.includes(id)) { alert("You no longer own: " + id); return; }
+        }
+        for (const id of (data.want.music || [])) {
+          if (!myInv.includes(id)) { alert("You no longer own: " + id); return; }
+        }
+        for (const id of (data.offer.bgs || [])) {
+          if (!themInv.includes(id)) { alert("They no longer own: " + id); return; }
+        }
+        for (const id of (data.offer.music || [])) {
+          if (!themInv.includes(id)) { alert("They no longer own: " + id); return; }
+        }
+
+        // Execute trade
+        let myNewBal = myBal - (data.want.credits || 0) + (data.offer.credits || 0);
+        let themNewBal = themBal - (data.offer.credits || 0) + (data.want.credits || 0);
+
+        // Transfer inventory items
+        let myNewInv = [...myInv];
+        let themNewInv = [...themInv];
+
+        // They give me their offer items
+        (data.offer.bgs || []).forEach(id => {
+          if (!myNewInv.includes(id)) myNewInv.push(id);
+          themNewInv = themNewInv.filter(x => x !== id);
+        });
+        (data.offer.music || []).forEach(id => {
+          if (!myNewInv.includes(id)) myNewInv.push(id);
+          themNewInv = themNewInv.filter(x => x !== id);
+        });
+
+        // I give them what they want
+        (data.want.bgs || []).forEach(id => {
+          if (!themNewInv.includes(id)) themNewInv.push(id);
+          myNewInv = myNewInv.filter(x => x !== id);
+        });
+        (data.want.music || []).forEach(id => {
+          if (!themNewInv.includes(id)) themNewInv.push(id);
+          myNewInv = myNewInv.filter(x => x !== id);
+        });
+
+        // Write all changes atomically
+        const updates = {
+          [`users/${window.myName}/balance`]: myNewBal,
+          [`users/${window.myName}/inventory`]: myNewInv,
+          [`users/${them}/balance`]: themNewBal,
+          [`users/${them}/inventory`]: themNewInv,
+          [`tradeInvites/${window.myName}/${tradeId}/status`]: "accepted",
+        };
+
+        db.ref().update(updates, (err) => {
+          if (err) { alert("Trade failed! Try again."); return; }
+          db.ref("notifications/" + them).push({
+            text: window.myName + " accepted your trade!",
+            from: window.myName,
+            timestamp: Date.now()
+          });
+          db.ref("tradeInvites/" + window.myName + "/" + tradeId).remove();
+          alert("Trade completed successfully!");
+        });
+      });
+    });
+  });
+}
+
+function declineTrade(tradeId) {
+  db.ref("tradeInvites/" + window.myName + "/" + tradeId).once("value", (snap) => {
+    const data = snap.val();
+    db.ref("tradeInvites/" + window.myName + "/" + tradeId).remove();
+    if (data && data.from) {
+      db.ref("notifications/" + data.from).push({
+        text: window.myName + " declined your trade request.",
+        from: window.myName,
+        timestamp: Date.now()
+      });
+    }
   });
 }
     </script>
