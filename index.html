@@ -1024,7 +1024,8 @@
         </div>
         <div class="nav-item" onclick="tab('shop')">shop</div>
         <div class="nav-item" onclick="tab('inventory')">inventory</div>
-        <div class="nav-item" onclick="tab('leaderboards')">leaderboards</div>
+ <div class="nav-item" onclick="tab('search')">search</div>
+<div class="nav-item" onclick="tab('leaderboards')">leaderboards</div>
         <div class="nav-item" onclick="tab('games')">games</div>
         <div class="nav-item" onclick="tab('gambling')">gambling</div>
         <div class="nav-item" onclick="tab('security')">security <span id="security-badge" class="badge" style="display: none;">!</span></div>
@@ -1281,6 +1282,18 @@
         <p style="font-size: 12px; opacity: 0.7; margin-bottom: 20px">backgrounds you own</p>
         <div class="shop-grid" id="inventory-items-container"></div>
       </div>
+      <div id="search" class="view" style="flex-direction:column;align-items:center;padding:40px;overflow-y:auto;">
+  <h2 style="letter-spacing:3px;margin-bottom:20px;">find users</h2>
+  <input
+    type="text"
+    id="user-search-input"
+    class="nexus-input"
+    style="max-width:400px;margin-bottom:20px;"
+    placeholder="Search by username..."
+    oninput="searchUsers()"
+  />
+  <div id="user-search-results" style="width:100%;max-width:600px;display:flex;flex-direction:column;gap:10px;"></div>
+</div>
 
       <div id="leaderboards" class="view" style="flex-direction: column; align-items: center; padding: 40px; overflow-y: auto;">
         <h2 style="letter-spacing: 3px; margin-bottom: 30px;">leaderboards</h2>
@@ -1698,7 +1711,8 @@
                 margin-bottom: 5px;
               "
             ></h2>
-            <div id="display-tag" style="margin-bottom: 10px; display: none;"></div>
+<div id="display-tag" style="margin-bottom: 10px; display: none;"></div>
+<div id="display-bio" style="font-size:11px;opacity:0.7;margin-bottom:10px;text-align:center;max-width:260px;display:none;font-style:italic;"></div>
             <div style="display: flex; align-items: center; gap: 5px">
               <div id="status-dot" class="dot"></div>
               <span
@@ -1769,6 +1783,28 @@
     TRADE INVITES
   </div>
   <div id="trade-invites-container"></div>
+</div>
+<div id="bio-edit-section" style="display:none;width:100%;margin-top:15px;">
+  <textarea
+    id="bio-input"
+    class="nexus-input"
+    style="resize:vertical;min-height:60px;font-size:12px;margin-bottom:6px;"
+    placeholder="Write a bio..."
+    maxlength="120"
+  ></textarea>
+  <button class="nexus-btn" onclick="saveBio()" style="width:auto;padding:6px 18px;font-size:11px;">Save Bio</button>
+</div>
+<div
+  id="blocked-section"
+  style="width:100%;margin-top:20px;border-top:1px solid var(--border);display:none;"
+>
+  <div style="font-size:10px;color:var(--alert);margin-top:15px;letter-spacing:1px;">BLOCKED USERS</div>
+  <div id="blocked-list-container" style="margin-top:8px;"></div>
+</div>
+
+<div id="visitor-log-section" style="display:none;width:100%;margin-top:20px;border-top:1px solid var(--border);padding-top:15px;">
+  <div style="font-size:10px;color:var(--accent);letter-spacing:1px;margin-bottom:8px;">RECENT VISITORS</div>
+  <div id="visitor-log-list" style="display:flex;flex-direction:column;gap:6px;"></div>
 </div>
             <button
               id="pfp-edit-btn"
@@ -3353,17 +3389,36 @@ let existingActionBtns = document.getElementById("profile-action-btns");
 if (existingActionBtns) existingActionBtns.remove();
 
 if (username !== window.myName) {
-  const actionDiv = document.createElement("div");
-  actionDiv.id = "profile-action-btns";
-  actionDiv.style.cssText = "display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;justify-content:center;";
-  actionDiv.innerHTML = `
-    <button class="nexus-btn" onclick="sendFriendRequestFromProfile('${username}')" style="width:auto;padding:7px 14px;font-size:10px;border-color:#00ff88;color:#00ff88;">+ Friend Request</button>
-    <button class="nexus-btn" onclick="openTradeModal('${username}')" style="width:auto;padding:7px 14px;font-size:10px;border-color:#ff9900;color:#ff9900;">🔄 Trade Request</button>
-  `;
-  // Insert before the pfp-edit-btn
-  const card = document.querySelector(".profile-card-ui");
-  const logoutBtn = card.querySelector(".logout-btn");
-  card.insertBefore(actionDiv, logoutBtn.nextSibling);
+  // Log this visit
+  logProfileVisit(username);
+
+  // Check if blocked
+  db.ref("users/" + window.myName + "/blocked/" + username).once("value", (bSnap) => {
+    const isBlocked = bSnap.val() === true;
+    const actionDiv = document.createElement("div");
+    actionDiv.id = "profile-action-btns";
+    actionDiv.style.cssText = "display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;justify-content:center;";
+    actionDiv.innerHTML = `
+      <button class="nexus-btn" onclick="sendFriendRequestFromProfile('${username}')" style="width:auto;padding:7px 14px;font-size:10px;border-color:#00ff88;color:#00ff88;">+ Friend Request</button>
+      <button class="nexus-btn" onclick="openTradeModal('${username}')" style="width:auto;padding:7px 14px;font-size:10px;border-color:#ff9900;color:#ff9900;">🔄 Trade Request</button>
+      <button class="nexus-btn" id="block-btn-${username}" onclick="toggleBlock('${username}')" style="width:auto;padding:7px 14px;font-size:10px;border-color:var(--alert);color:${isBlocked ? 'black' : 'var(--alert)'};background:${isBlocked ? 'var(--alert)' : 'transparent'};">${isBlocked ? '🚫 Unblock' : '🚫 Block'}</button>
+    `;
+    const card = document.querySelector(".profile-card-ui");
+    const logoutBtn = card.querySelector(".logout-btn");
+    card.insertBefore(actionDiv, logoutBtn.nextSibling);
+  });
+
+  // Hide my-only sections
+  document.getElementById("bio-edit-section").style.display = "none";
+  document.getElementById("visitor-log-section").style.display = "none";
+  document.getElementById("blocked-section").style.display = "none";
+} else {
+  // Show bio editor
+  document.getElementById("bio-edit-section").style.display = "block";
+  // Load visitor log
+  loadVisitorLog();
+  // Show blocked users
+  loadBlockedUsers();
 }
   document.getElementById("pending-requests-section").style.display =
     username === window.myName ? "block" : "none";
@@ -3425,6 +3480,19 @@ document.getElementById("trade-invites-section").style.display =
       } else {
         tagContainer.style.display = "none";
       }
+      // Bio
+const bioEl = document.getElementById("display-bio");
+if (data.bio) {
+  bioEl.innerText = '"' + data.bio + '"';
+  bioEl.style.display = "block";
+} else {
+  bioEl.style.display = "none";
+}
+// Pre-fill bio input if own profile
+if (username === window.myName) {
+  const bioInput = document.getElementById("bio-input");
+  if (bioInput) bioInput.value = data.bio || "";
+}
     }
   });
 }
@@ -4879,6 +4947,197 @@ function declineTrade(tradeId) {
       });
     }
   });
+}
+// --- BIO ---
+function saveBio() {
+  const bio = (document.getElementById("bio-input").value || "").trim().substring(0, 120);
+  db.ref("users/" + window.myName + "/bio").set(bio).then(() => {
+    alert("Bio saved!");
+  });
+}
+
+// --- BLOCK SYSTEM ---
+function toggleBlock(username) {
+  db.ref("users/" + window.myName + "/blocked/" + username).once("value", (snap) => {
+    if (snap.val() === true) {
+      // Unblock
+      db.ref("users/" + window.myName + "/blocked/" + username).remove().then(() => {
+        const btn = document.getElementById("block-btn-" + username);
+        if (btn) {
+          btn.innerText = "🚫 Block";
+          btn.style.background = "transparent";
+          btn.style.color = "var(--alert)";
+        }
+      });
+    } else {
+      // Block
+      if (!confirm("Block " + username + "? They won't be able to message you or view your profile.")) return;
+      db.ref("users/" + window.myName + "/blocked/" + username).set(true).then(() => {
+        const btn = document.getElementById("block-btn-" + username);
+        if (btn) {
+          btn.innerText = "🚫 Unblock";
+          btn.style.background = "var(--alert)";
+          btn.style.color = "black";
+        }
+      });
+    }
+  });
+}
+
+function loadBlockedUsers() {
+  const section = document.getElementById("blocked-section");
+  const container = document.getElementById("blocked-list-container");
+  db.ref("users/" + window.myName + "/blocked").on("value", (snap) => {
+    container.innerHTML = "";
+    let count = 0;
+    snap.forEach(child => {
+      count++;
+      const username = child.key;
+      const div = document.createElement("div");
+      div.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;";
+      div.innerHTML = `
+        <span style="opacity:0.7;">${username}</span>
+        <button class="nexus-btn" onclick="toggleBlock('${username}')" style="width:auto;padding:3px 10px;font-size:10px;border-color:var(--online);color:var(--online);">Unblock</button>
+      `;
+      container.appendChild(div);
+    });
+    section.style.display = count > 0 ? "block" : "none";
+  });
+}
+
+// Block check — call before opening a chat
+function isUserBlocked(username, callback) {
+  db.ref("users/" + window.myName + "/blocked/" + username).once("value", (snap) => {
+    callback(snap.val() === true);
+  });
+}
+
+// --- VISITOR LOG ---
+function logProfileVisit(profileOwner) {
+  if (!window.myName || window.myName === profileOwner) return;
+  const visitData = {
+    visitor: window.myName,
+    timestamp: Date.now()
+  };
+  // Store under the profile owner's visitors, keyed by visitor name so it overwrites old visits
+  db.ref("users/" + profileOwner + "/visitors/" + window.myName).set(visitData);
+}
+
+function loadVisitorLog() {
+  const section = document.getElementById("visitor-log-section");
+  const list = document.getElementById("visitor-log-list");
+  db.ref("users/" + window.myName + "/visitors").orderByChild("timestamp").limitToLast(10).once("value", (snap) => {
+    list.innerHTML = "";
+    const visitors = [];
+    snap.forEach(child => visitors.push(child.val()));
+    visitors.reverse(); // Most recent first
+
+    if (visitors.length === 0) {
+      list.innerHTML = '<div style="font-size:11px;opacity:0.4;">No visitors yet.</div>';
+      section.style.display = "block";
+      return;
+    }
+
+    visitors.forEach(v => {
+      const timeAgo = getTimeAgo(v.timestamp);
+      const div = document.createElement("div");
+      div.style.cssText = "display:flex;align-items:center;gap:10px;cursor:pointer;padding:5px 0;border-bottom:1px solid var(--border);";
+      div.innerHTML = `
+        <img id="vlog-pfp-${v.visitor}" src="https://via.placeholder.com/28" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid var(--border);" />
+        <span style="flex:1;font-size:12px;">${v.visitor}</span>
+        <span style="font-size:10px;opacity:0.4;">${timeAgo}</span>
+      `;
+      div.onclick = () => viewProfile(v.visitor);
+      list.appendChild(div);
+
+      db.ref("users/" + v.visitor + "/pfp").once("value", (pSnap) => {
+        const img = document.getElementById("vlog-pfp-" + v.visitor);
+        if (img && pSnap.val()) img.src = pSnap.val();
+      });
+    });
+
+    section.style.display = "block";
+  });
+}
+
+function getTimeAgo(timestamp) {
+  const diff = Date.now() - timestamp;
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return mins + "m ago";
+  if (hours < 24) return hours + "h ago";
+  return days + "d ago";
+}
+
+// --- USER SEARCH ---
+let searchUsersTimeout = null;
+let allUsersCache = null;
+
+function searchUsers() {
+  const query = document.getElementById("user-search-input").value.trim().toLowerCase();
+  const results = document.getElementById("user-search-results");
+
+  clearTimeout(searchUsersTimeout);
+  searchUsersTimeout = setTimeout(() => {
+    if (!query) {
+      results.innerHTML = '<div style="opacity:0.4;font-size:13px;text-align:center;padding:20px;">Type to search users...</div>';
+      return;
+    }
+
+    // Fetch all users and filter client-side
+    db.ref("users").once("value", (snap) => {
+      results.innerHTML = "";
+      const matches = [];
+      snap.forEach(child => {
+        if (child.key.includes(query) && child.key !== window.myName) {
+          matches.push({ username: child.key, data: child.val() });
+        }
+      });
+
+      if (matches.length === 0) {
+        results.innerHTML = '<div style="opacity:0.4;font-size:13px;text-align:center;padding:20px;">No users found.</div>';
+        return;
+      }
+
+      matches.forEach(({ username, data }) => {
+        const isOnline = data.status === "online";
+        const div = document.createElement("div");
+        div.style.cssText = "display:flex;align-items:center;gap:12px;padding:12px 15px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;cursor:pointer;transition:0.2s;";
+        div.onmouseover = () => div.style.borderColor = "var(--accent)";
+        div.onmouseout = () => div.style.borderColor = "rgba(255,255,255,0.08)";
+        div.onclick = () => viewProfile(username);
+
+        // Tag badges
+        let tagHtml = "";
+        if (username === "dom") {
+          tagHtml = `<span style="background:#ff0000;color:white;padding:1px 7px;border-radius:3px;font-size:9px;text-transform:uppercase;font-weight:bold;">OWNER</span>`;
+        } else if (data.tag) {
+          tagHtml = `<span style="background:${data.tag.color};color:white;padding:1px 7px;border-radius:3px;font-size:9px;text-transform:uppercase;font-weight:bold;">${data.tag.name}</span>`;
+        }
+        if (data.staffTag && (!data.tag || data.tag.name !== data.staffTag.name)) {
+          tagHtml += `<span style="background:${data.staffTag.color};color:white;padding:1px 7px;border-radius:3px;font-size:9px;text-transform:uppercase;font-weight:bold;margin-left:3px;">${data.staffTag.name}</span>`;
+        }
+
+        div.innerHTML = `
+          <img src="${data.pfp || 'https://via.placeholder.com/40'}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid ${isOnline ? 'var(--online)' : '#333'};" />
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+              <span style="font-size:13px;font-weight:bold;">${username}</span>
+              ${tagHtml}
+            </div>
+            <div style="font-size:11px;opacity:0.5;">${data.bio ? '"' + data.bio + '"' : 'No bio'}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:${isOnline ? 'var(--online)' : '#444'};${isOnline ? 'box-shadow:0 0 6px var(--online);' : ''}"></div>
+            <span style="font-size:10px;color:${isOnline ? 'var(--online)' : '#444'};">${isOnline ? 'online' : 'offline'}</span>
+          </div>
+        `;
+        results.appendChild(div);
+      });
+    });
+  }, 300);
 }
     </script>
   </body>
